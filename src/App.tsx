@@ -532,7 +532,13 @@ const AdminApp = ({ user }: { user: User }) => {
     const headers = ['날짜', '담당자', '현장명', '금액(원)', '항목', '사용처', '법카번호', '상태', '이미지링크'];
     
     try {
-      const rows = reports.map((r: Report) => [
+      const sorted = [...reports].sort((a, b) => {
+        const siteCompare = (a.site || '').localeCompare(b.site || '', 'ko');
+        if (siteCompare !== 0) return siteCompare;
+        return (a.date || '').localeCompare(b.date || '');
+      });
+
+      const rows = sorted.map((r: Report) => [
         r.date || '',
         r.name || '',
         r.site || '',
