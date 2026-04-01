@@ -883,56 +883,68 @@ const S: Record<string, React.CSSProperties> = {
 const style = document.createElement('style');
 style.textContent = `
   @keyframes spin { to { transform: rotate(360deg); } }
+  /* --- 인쇄 미리보기 화면 모드 (A4 시뮬레이션) --- */
+  .print-area { background: #f0f0f0 !important; }
+  .print-pages { width: 100%; padding: 20px 0; font-family: sans-serif; }
+  .print-page {
+    width: 210mm;
+    height: 297mm;
+    margin: 0 auto 30px;
+    background: white;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    padding: 10mm;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+  }
+  .print-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-rows: repeat(3, 1fr) !important;
+    gap: 16px !important;
+    flex: 1;
+    min-height: 0; 
+  }
+  .report-card { 
+    border: 1px solid #ddd !important; 
+    margin-bottom: 0 !important; 
+    padding: 16px !important;
+    box-shadow: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .print-img-wrap {
+    flex: 1;
+    position: relative;
+    margin-top: 12px;
+  }
+  .print-img {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    border-radius: 8px !important;
+    margin-top: 0 !important;
+  }
+
+  /* --- 실제 종이 인쇄 모드 (프린터 전송 시) --- */
   @media print {
     .hide-on-print { display: none !important; }
-    .print-area { position: static !important; background: white !important; color: black !important; padding: 0 !important; }
+    .print-area { position: static !important; background: white !important; padding: 0 !important; display: block !important; overflow: visible !important; }
     body { background: white !important; }
     
-    /* 1장당 강제 6 분할 설정 */
-    .print-pages { width: 100%; }
+    .print-pages { padding: 0; }
     .print-page {
+      margin: 0;
+      box-shadow: none;
       page-break-after: always;
       break-after: page;
-      padding: 10mm;
-      box-sizing: border-box;
-      height: 297mm; /* 완벽한 A4 한 장 높이 */
-      display: flex;
-      flex-direction: column;
     }
     .print-page:last-child {
       page-break-after: auto;
       break-after: auto;
-    }
-    .print-grid {
-      display: grid !important;
-      grid-template-columns: repeat(2, 1fr) !important;
-      grid-template-rows: repeat(3, 1fr) !important;
-      gap: 16px !important;
-      flex: 1;
-      min-height: 0; 
-    }
-    .report-card { 
-      border: 1px solid #ddd !important; 
-      margin-bottom: 0 !important; 
-      padding: 16px !important;
-      box-shadow: none !important;
-      display: flex !important;
-      flex-direction: column !important;
-    }
-    .print-img-wrap {
-      flex: 1;
-      position: relative;
-      margin-top: 12px;
-    }
-    .print-img {
-      position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      object-fit: contain !important;
-      border-radius: 8px !important;
-      margin-top: 0 !important;
     }
     
     * {
