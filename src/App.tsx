@@ -619,19 +619,22 @@ const AdminApp = ({ user }: { user: User }) => {
               <button onClick={() => setShowReport(false)} style={{ ...S.subActionBtn, color: '#333', borderColor: '#eee', padding: '8px 16px' }}>닫기</button>
             </div>
           </div>
-          <div style={{ padding: 20 }}>
+          <div style={{ padding: 20 }} className="print-grid">
             {reports.map((r: Report, i: number) => (
-              <div key={r.id} style={S.reportCard}>
+              <div key={r.id} style={S.reportCard} className="report-card">
                 <div style={S.reportHeader}>
                   <div style={{ flex: 1 }}>
                     <p style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>{r.merchant || r.site} ({r.amount}원)</p>
                     <p style={{ fontSize: '0.85rem', color: '#666', marginTop: 6, margin: '6px 0 0' }}>{r.date} · {r.name} · {r.site}</p>
-                    <p style={{ fontSize: '0.85rem', color: '#007aff', marginTop: 4, fontWeight: 600, margin: '4px 0 0' }}>{r.purpose}</p>
+                    <p style={{ fontSize: '0.85rem', color: '#007aff', marginTop: 4, fontWeight: 600, margin: '4px 0 0' }}>
+                      {r.purpose}
+                      {r.cardLast4 && <span style={{ color: '#888', marginLeft: 8 }}>· 법카 끝번호: {r.cardLast4}</span>}
+                    </p>
                   </div>
                   <div style={{ textAlign: 'right', fontSize: '0.75rem', color: '#999' }}>NO. {reports.length - i}</div>
                 </div>
                 {r.imageUrl && (
-                  <img src={r.imageUrl} alt="" style={{ width: '100%', maxHeight: 400, objectFit: 'contain', borderRadius: 12, marginTop: 20 }} />
+                  <img src={r.imageUrl} alt="" style={{ width: '100%', maxHeight: 400, objectFit: 'contain', borderRadius: 12, marginTop: 20 }} className="print-img" />
                 )}
               </div>
             ))}
@@ -870,7 +873,33 @@ style.textContent = `
     .hide-on-print { display: none !important; }
     .print-area { position: static !important; background: white !important; color: black !important; padding: 0 !important; }
     body { background: white !important; }
-    .report-card { border: 1px solid #eee !important; margin-bottom: 30px !important; }
+    
+    /* 2단 그리드 적용 (한 페이지에 여러 영수증 출력) */
+    .print-grid {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 16px !important;
+      padding: 10px !important;
+    }
+    
+    .report-card { 
+      border: 1px solid #ddd !important; 
+      margin-bottom: 0 !important; 
+      padding: 16px !important;
+      box-shadow: none !important;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    
+    .print-img {
+      max-height: 220px !important; /* 이미지 크기 축소로 종이 절약 */
+      margin-top: 12px !important;
+    }
+    
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
   }
 `;
 document.head.appendChild(style);
