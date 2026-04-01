@@ -20,3 +20,29 @@ input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
   -webkit-appearance: none;
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .a4-page, .a4-page * {
+    visibility: visible;
+  }
+  .a4-page {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+  @page {
+    margin: 0;
+    size: A4;
+  }
+  .print-controls {
+    display: none !important;
+  }
+}

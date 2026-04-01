@@ -11,6 +11,7 @@ import {
 } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 import { ContractApp } from './ContractApp';
+import { ContractPrintView } from './ContractPrintView';
 
 // ─── Firebase ─────────────────────────────────────────────────────
 const app = initializeApp({
@@ -549,6 +550,7 @@ const AdminApp = ({ user }: { user: User }) => {
   const [reports, setReports] = useState<Report[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
+  const [showContractPrint, setShowContractPrint] = useState(false);
   const [selected, setSelected] = useState<Report | null>(null);
   const [photoFull, setPhotoFull] = useState(false);
   const [showReport, setShowReport] = useState(false);
@@ -972,12 +974,21 @@ const AdminApp = ({ user }: { user: User }) => {
               })}
             </div>
 
+            <button onClick={() => setShowContractPrint(true)}
+              style={{ width: '100%', marginTop: 20, padding: 16, background: '#1a1a1a', color: 'white', border: 'none', borderRadius: 14, fontWeight: 700 }}>
+              🖨️ 계약서 인쇄 / PDF 다운로드
+            </button>
             <button onClick={() => setSelectedContract(null)}
-              style={{ width: '100%', marginTop: 16, padding: 14, background: 'transparent', color: '#444', border: '1px solid #eee', borderRadius: 14 }}>
+              style={{ width: '100%', marginTop: 10, padding: 14, background: 'transparent', color: '#444', border: '1px solid #eee', borderRadius: 14 }}>
               닫기
             </button>
           </div>
         </div>
+      )}
+
+      {/* 인쇄 뷰 띄우기 */}
+      {showContractPrint && selectedContract && (
+        <ContractPrintView contract={selectedContract} onClose={() => setShowContractPrint(false)} />
       )}
 
       {/* 영수증 연결 모달 */}
