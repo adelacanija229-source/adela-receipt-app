@@ -247,15 +247,15 @@ export const ContractPrintView = ({ contract, onClose }: { contract: Contract; o
             <div style={{ flex: 1 }}>
               <strong>( 사 용 자 )</strong><br/>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginTop: 4 }}>
-                <span style={{ width: 100 }}>◇ 사 업 장 명 : </span>
+                <span style={{ width: 120, flexShrink: 0 }}>◇ 사 업 장 명 : </span>
                 <strong style={{ fontSize: '0.9rem' }}>㈜ 아 델 라</strong>
               </div>
               <div style={{ display: 'flex', marginTop: 4 }}>
-                <span style={{ width: 100, flexShrink: 0 }}>◇ 주 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 소 : </span>
+                <span style={{ width: 120, flexShrink: 0 }}>◇ 주 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 소 : </span>
                 <span>서울 강남구 학동로 11길 56 백송B/D 2층</span>
               </div>
               <div style={{ display: 'flex', marginTop: 4 }}>
-                <span style={{ width: 100 }}>◇ 대표 전화번호: </span>
+                <span style={{ width: 120, flexShrink: 0 }}>◇ 대표 전화번호 : </span>
                 <span>02-2281-0456</span>
               </div>
             </div>
@@ -264,7 +264,7 @@ export const ContractPrintView = ({ contract, onClose }: { contract: Contract; o
             <div style={{ flex: 1.2, paddingLeft: 40 }}>
               <strong>( 근 로 자 )</strong><br/>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginTop: 4 }}>
-                <span style={{ width: 100 }}>◇ 성 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 명 : </span>
+                <span style={{ width: 120, flexShrink: 0 }}>◇ 성 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 명 : </span>
                 <strong style={{ fontSize: '0.9rem', flex: 1, textAlign: 'center' }}>{contract.workerName}</strong>
                 <span style={{ marginLeft: 'auto', marginRight: 40 }}>(인)</span>
                 
@@ -276,15 +276,15 @@ export const ContractPrintView = ({ contract, onClose }: { contract: Contract; o
                 )}
               </div>
               <div style={{ display: 'flex', marginTop: 4 }}>
-                <span style={{ width: 100, flexShrink: 0 }}>◇ 주 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 소 : </span>
+                <span style={{ width: 120, flexShrink: 0 }}>◇ 주 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 소 : </span>
                 <span>{contract.workerAddress}</span>
               </div>
               <div style={{ display: 'flex', marginTop: 4 }}>
-                <span style={{ width: 100 }}>◇ 주민등록번호 : </span>
+                <span style={{ width: 120, flexShrink: 0 }}>◇ 주민등록번호 : </span>
                 <span>{contract.workerIdNum}</span>
               </div>
               <div style={{ display: 'flex', marginTop: 4 }}>
-                <span style={{ width: 100 }}>◇ 휴 대 전 화 : </span>
+                <span style={{ width: 120, flexShrink: 0 }}>◇ 휴 대 전 화 : </span>
                 <span>{contract.workerPhone}</span>
               </div>
             </div>
@@ -315,35 +315,35 @@ const styles: Record<string, React.CSSProperties> = {
     background: '#e0e0e0', color: '#333', border: 'none', padding: '8px 16px', borderRadius: 4, cursor: 'pointer', fontWeight: 600
   },
   page: {
-    background: '#fff', width: '210mm', height: '297mm', // A4 크기 지정 (minHeight 대신 고정 height로 오버플로우 강제 억제 효과 기대하지만 내부 컨텐츠가 늘어나면 늘어남)
-    padding: '8mm 12mm', // 상하좌우 여백 (압축)
+    background: '#fff', width: '210mm', height: '297mm',
+    padding: '12mm 15mm', // 늘림
     boxSizing: 'border-box', color: '#000', fontFamily: "'Pretendard', 'Malgun Gothic', 'Dotum', sans-serif"
   },
   titleContainer: {
-    textAlign: 'center' as const, marginBottom: 8,
+    textAlign: 'center' as const, marginBottom: 15,
   },
   mainTitle: {
     display: 'inline-block', border: '2px solid black',
     background: '#e6f0fa', // 연한 파란색 배경
-    padding: '4px 30px', margin: 0, fontSize: '1.3rem', letterSpacing: '6px', fontWeight: 900
+    padding: '6px 40px', margin: 0, fontSize: '1.4rem', letterSpacing: '8px', fontWeight: 900
   },
   table: {
-    width: '100%', borderCollapse: 'collapse', border: '2px solid black', marginBottom: 6,
-    fontSize: '0.75rem'
+    width: '100%', borderCollapse: 'collapse', border: '2px solid black', marginBottom: 15,
+    fontSize: '0.8rem'
   },
   td: {
-    border: '1px solid black', padding: '2px 4px', verticalAlign: 'middle', wordBreak: 'keep-all'
+    border: '1px solid black', padding: '4px 6px', verticalAlign: 'middle', wordBreak: 'keep-all'
   },
   th: {
     fontWeight: 700, textAlign: 'center', letterSpacing: '4px'
   },
   declaration: {
-    textAlign: 'center', padding: '4px 0', fontSize: '0.85rem', borderLeft: '2px solid black', borderRight: '2px solid black'
+    textAlign: 'center', padding: '6px 0', fontSize: '0.9rem', borderLeft: '2px solid black', borderRight: '2px solid black'
   },
   footerWrap: {
-    marginTop: 6, padding: '4px 0'
+    marginTop: 40, padding: '10px 0' // 서명란 아래로 밀어내기
   },
   footerDate: {
-    textAlign: 'center', marginBottom: 8, fontSize: '0.9rem'
+    textAlign: 'center', marginBottom: 20, fontSize: '0.95rem'
   }
 };
