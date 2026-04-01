@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { initializeApp } from 'firebase/app';
 import {
   getFirestore, collection, addDoc, onSnapshot,
-  query, orderBy, serverTimestamp, updateDoc, doc
+  query, orderBy, serverTimestamp, updateDoc, doc, deleteDoc
 } from 'firebase/firestore';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import {
@@ -520,7 +520,10 @@ const AdminApp = ({ user }: { user: User }) => {
   const [reports, setReports] = useState<Report[]>([]);
   const [selected, setSelected] = useState<Report | null>(null);
   const [photoFull, setPhotoFull] = useState(false);
-  const [showReport, setShowReport] = useState(false); // 리포트 뷰 상태
+  const [showReport, setShowReport] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteBeforeDate, setDeleteBeforeDate] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   // CSV 다운로드 (UTF-8 BOM 추가 및 완벽한 예외 처리)
   const downloadCSV = () => {
@@ -583,6 +586,31 @@ const AdminApp = ({ user }: { user: User }) => {
     setSelected(null);
   };
 
+  // 개별 삭제
+  const deleteReport = async (id: string) => {
+    if (!window.confirm('이 영수증을 삭제하시겠습니까?\n삭제 후에는 복구가 불가능합니다.')) return;
+    try {
+      await deleteDoc(doc(db, 'reports', id));
+      setSelected(null);
+    } catch { alert('삭제 실패. 다시 시도해주세요.'); }
+  };
+
+  // 기간 일괄 삭제
+  const bulkDeleteBefore = async () => {
+    if (!deleteBeforeDate) { alert('날짜를 선택해주세요.'); return; }
+    const targets = reports.filter(r => r.date && r.date < deleteBeforeDate);
+    if (targets.length === 0) { alert('해당 기간에 삭제할 데이터가 없습니다.'); return; }
+    if (!window.confirm(`${deleteBeforeDate} 이전 영수증 ${targets.length}건을 삭제합니다.\n엑셀 백업 후 진행하세요. 계속하시겠습니까?`)) return;
+    setDeleting(true);
+    try {
+      await Promise.all(targets.map(r => deleteDoc(doc(db, 'reports', r.id))));
+      setShowDeleteModal(false);
+      setDeleteBeforeDate('');
+      alert(`${targets.length}건이 삭제되었습니다.`);
+    } catch { alert('일부 삭제에 실패했습니다.'); }
+    finally { setDeleting(false); }
+  };
+
   const downloadImage = (url: string) => {
     const a = document.createElement('a');
     a.href = url; a.download = `receipt_${Date.now()}.jpg`;
@@ -608,6 +636,7 @@ const AdminApp = ({ user }: { user: User }) => {
           )}
           <button onClick={downloadCSV} style={{ ...S.subActionBtn, color: '#1a1a1a', borderColor: '#eee' }}>EXCEL</button>
           <button onClick={() => setShowReport(true)} style={{ ...S.subActionBtn, color: '#1a1a1a', borderColor: '#eee' }}>REPORT</button>
+          <button onClick={() => setShowDeleteModal(true)} style={{ ...S.subActionBtn, color: '#9c2c2c', borderColor: '#9c2c2c40' }}>DELETE</button>
           <button onClick={() => signOut(auth)}
             style={{ background: '#fff', border: '1px solid #eee', color: '#888', padding: '6px 12px', borderRadius: 20, fontSize: '0.8rem', cursor: 'pointer' }}>
             로그아웃
@@ -658,6 +687,36 @@ const AdminApp = ({ user }: { user: User }) => {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* 기간 일괄 삭제 모달 */}
+      {showDeleteModal && (
+        <div style={S.modal} onClick={() => setShowDeleteModal(false)}>
+          <div style={S.modalBox} onClick={e => e.stopPropagation()}>
+            <p style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: 8 }}>📅 기간 일괄 삭제</p>
+            <p style={{ fontSize: '0.85rem', color: '#ff3b30', marginBottom: 20, lineHeight: 1.6 }}>
+              ⚠️ 삭제된 데이터는 복구가 불가능합니다.<br />반드시 엑셀(EXCEL) 백업 후 진행하세요.
+            </p>
+            <div style={{ marginBottom: 20 }}>
+              <label style={S.label}>이 날짜 이전 영수증을 모두 삭제</label>
+              <input type="date" value={deleteBeforeDate} onChange={e => setDeleteBeforeDate(e.target.value)}
+                style={S.input} />
+              {deleteBeforeDate && (
+                <p style={{ fontSize: '0.8rem', color: '#888', marginTop: 8 }}>
+                  해당: {reports.filter(r => r.date && r.date < deleteBeforeDate).length}건
+                </p>
+              )}
+            </div>
+            <button onClick={bulkDeleteBefore} disabled={deleting}
+              style={{ width: '100%', padding: 16, background: '#ff3b30', color: 'white', border: 'none', borderRadius: 14, fontWeight: 700, fontSize: '1rem', opacity: deleting ? 0.6 : 1 }}>
+              {deleting ? '삭제 중...' : '일괄 삭제 실행'}
+            </button>
+            <button onClick={() => setShowDeleteModal(false)}
+              style={{ width: '100%', marginTop: 10, padding: 14, background: 'transparent', color: '#888', border: '1px solid #eee', borderRadius: 14 }}>
+              취소
+            </button>
           </div>
         </div>
       )}
@@ -758,6 +817,10 @@ const AdminApp = ({ user }: { user: User }) => {
             <button onClick={() => setSelected(null)}
               style={{ width: '100%', marginTop: 12, padding: 14, background: 'transparent', color: '#444', border: '1px solid #1e1e1e', borderRadius: 14 }}>
               닫기
+            </button>
+            <button onClick={() => deleteReport(selected.id)}
+              style={{ width: '100%', marginTop: 8, padding: 14, background: 'transparent', color: '#ff3b30', border: '1px solid #ff3b3040', borderRadius: 14, fontSize: '0.9rem' }}>
+              이 영수증 삭제
             </button>
           </div>
         </div>
