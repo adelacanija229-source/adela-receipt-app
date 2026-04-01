@@ -1,10 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-
-// Firebase SDK 싱글톤 - App.tsx에서 이미 초기화된 앱 재사용
-const db = getFirestore();
-const storage = getStorage();
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from './App';
 
 // ─── 상수 ──────────────────────────────────────────────────────────
 const WORK_TYPES = ['목공', '도배', '타일', '페인트', '철근', '전기', '설비', '미장', '조적', '유리', '기타'];

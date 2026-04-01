@@ -21,8 +21,8 @@ const app = initializeApp({
   messagingSenderId: "334450129327",
   appId: "1:334450129327:web:e35b83fc235f492effd75a",
 });
-const db = getFirestore(app);
-const storage = getStorage(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
 const auth = getAuth(app);
 
 // ─── Constants ────────────────────────────────────────────────────
