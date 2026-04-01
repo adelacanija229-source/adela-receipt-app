@@ -316,34 +316,34 @@ const styles: Record<string, React.CSSProperties> = {
   },
   page: {
     background: '#fff', width: '210mm', height: '297mm',
-    padding: '12mm 15mm', // 늘림
+    padding: '10mm 15mm', // 약간 줄임 (중간 지점)
     boxSizing: 'border-box', color: '#000', fontFamily: "'Pretendard', 'Malgun Gothic', 'Dotum', sans-serif"
   },
   titleContainer: {
-    textAlign: 'center' as const, marginBottom: 15,
+    textAlign: 'center' as const, marginBottom: 10,
   },
   mainTitle: {
     display: 'inline-block', border: '2px solid black',
-    background: '#e6f0fa', // 연한 파란색 배경
-    padding: '6px 40px', margin: 0, fontSize: '1.4rem', letterSpacing: '8px', fontWeight: 900
+    background: '#e6f0fa',
+    padding: '4px 30px', margin: 0, fontSize: '1.3rem', letterSpacing: '6px', fontWeight: 900
   },
   table: {
-    width: '100%', borderCollapse: 'collapse', border: '2px solid black', marginBottom: 15,
-    fontSize: '0.8rem'
+    width: '100%', borderCollapse: 'collapse', border: '2px solid black', marginBottom: 10,
+    fontSize: '0.75rem' // 0.8 -> 0.75
   },
   td: {
-    border: '1px solid black', padding: '4px 6px', verticalAlign: 'middle', wordBreak: 'keep-all'
+    border: '1px solid black', padding: '3px 4px', verticalAlign: 'middle', wordBreak: 'keep-all'
   },
   th: {
     fontWeight: 700, textAlign: 'center', letterSpacing: '4px'
   },
   declaration: {
-    textAlign: 'center', padding: '6px 0', fontSize: '0.9rem', borderLeft: '2px solid black', borderRight: '2px solid black'
+    textAlign: 'center', padding: '4px 0', fontSize: '0.9rem', borderLeft: '2px solid black', borderRight: '2px solid black'
   },
   footerWrap: {
-    marginTop: 40, padding: '10px 0' // 서명란 아래로 밀어내기
+    marginTop: 20, padding: '10px 0' // 40 -> 20 (서명란 간격 조율)
   },
   footerDate: {
-    textAlign: 'center', marginBottom: 20, fontSize: '0.95rem'
+    textAlign: 'center', marginBottom: 15, fontSize: '0.95rem'
   }
 };
