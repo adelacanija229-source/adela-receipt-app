@@ -10,6 +10,7 @@ import {
   onAuthStateChanged, signOut
 } from 'firebase/auth';
 import type { User } from 'firebase/auth';
+import { ContractApp } from './ContractApp';
 
 // ─── Firebase ─────────────────────────────────────────────────────
 const app = initializeApp({
@@ -45,6 +46,28 @@ interface Report {
   purpose: string;
   imageUrl: string;
   status: 'pending' | 'approved' | 'rejected';
+  createdAt: any;
+}
+
+interface Contract {
+  id: string;
+  workerName: string;
+  workerIdNum: string;
+  workerPhone: string;
+  workerAddress: string;
+  bankName: string;
+  bankAccount: string;
+  bankHolder: string;
+  siteName: string;
+  workType: string;
+  startDate: string;
+  endDate: string;
+  dailyWage: number;
+  wageBreakdown: { base: number; overtime: number; holiday: number; weekly: number };
+  managerName: string;
+  signatureUrl: string;
+  linkedReceiptIds: string[];
+  status: string;
   createdAt: any;
 }
 
@@ -263,8 +286,13 @@ const FieldApp = () => {
             OPEN GALLERY
           </label>
 
+          <button onClick={() => window.location.href = '/contract'}
+            style={{ display: 'block', margin: '24px auto 0', background: 'none', border: '1px solid #9c2c2c40', borderRadius: 40, color: '#9c2c2c', fontSize: '0.82rem', cursor: 'pointer', letterSpacing: '0.05em', padding: '10px 28px', fontWeight: 600 }}>
+            · 일용직 근로계약서 ·
+          </button>
+
           <button onClick={() => window.location.href = '/admin'}
-            style={{ display: 'block', margin: '48px auto 0', background: 'none', border: 'none', color: '#888', fontSize: '0.75rem', cursor: 'pointer', letterSpacing: '0.05em' }}>
+            style={{ display: 'block', margin: '20px auto 0', background: 'none', border: 'none', color: '#888', fontSize: '0.75rem', cursor: 'pointer', letterSpacing: '0.05em' }}>
             ADMIN ACCESS
           </button>
         </div>
@@ -517,13 +545,18 @@ const AdminLogin = () => {
 // ADMIN APP
 // ═══════════════════════════════════════════════════════════════════
 const AdminApp = ({ user }: { user: User }) => {
+  const [adminTab, setAdminTab] = useState<'receipts' | 'contracts'>('receipts');
   const [reports, setReports] = useState<Report[]>([]);
+  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [selected, setSelected] = useState<Report | null>(null);
   const [photoFull, setPhotoFull] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteBeforeDate, setDeleteBeforeDate] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [linkingContract, setLinkingContract] = useState<Contract | null>(null);
+  const [selectedReceiptIds, setSelectedReceiptIds] = useState<string[]>([]);
 
   // CSV 다운로드 (UTF-8 BOM 추가 및 완벽한 예외 처리)
   const downloadCSV = () => {
@@ -581,6 +614,19 @@ const AdminApp = ({ user }: { user: User }) => {
     }, () => {});
   }, []);
 
+  useEffect(() => {
+    const q = query(collection(db, 'contracts'), orderBy('createdAt', 'desc'));
+    return onSnapshot(q, snap => {
+      setContracts(snap.docs.map(d => ({ id: d.id, ...d.data() } as Contract)));
+    }, () => {});
+  }, []);
+
+  const linkReceipts = async (contractId: string, ids: string[]) => {
+    await updateDoc(doc(db, 'contracts', contractId), { linkedReceiptIds: ids });
+    setLinkingContract(null);
+    setSelectedReceiptIds([]);
+  };
+
   const updateStatus = async (id: string, status: 'approved' | 'rejected') => {
     await updateDoc(doc(db, 'reports', id), { status });
     setSelected(null);
@@ -631,17 +677,34 @@ const AdminApp = ({ user }: { user: User }) => {
           <span style={{ ...S.logo, fontSize: '0.85rem', color: '#888', fontWeight: 400, letterSpacing: '0.05em' }}>ADMIN</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {pending.length > 0 && (
+          {adminTab === 'receipts' && pending.length > 0 && (
             <span style={{ ...S.badge, background: '#f5f5f5', color: '#333', borderRadius: 4, padding: '2px 8px', fontSize: '0.7rem', border: '1px solid #eee' }}>PENDING: {pending.length}</span>
           )}
-          <button onClick={downloadCSV} style={{ ...S.subActionBtn, color: '#1a1a1a', borderColor: '#eee' }}>EXCEL</button>
-          <button onClick={() => setShowReport(true)} style={{ ...S.subActionBtn, color: '#1a1a1a', borderColor: '#eee' }}>REPORT</button>
-          <button onClick={() => setShowDeleteModal(true)} style={{ ...S.subActionBtn, color: '#9c2c2c', borderColor: '#9c2c2c40' }}>DELETE</button>
+          {adminTab === 'receipts' && (
+            <>
+              <button onClick={downloadCSV} style={{ ...S.subActionBtn, color: '#1a1a1a', borderColor: '#eee' }}>EXCEL</button>
+              <button onClick={() => setShowReport(true)} style={{ ...S.subActionBtn, color: '#1a1a1a', borderColor: '#eee' }}>REPORT</button>
+              <button onClick={() => setShowDeleteModal(true)} style={{ ...S.subActionBtn, color: '#9c2c2c', borderColor: '#9c2c2c40' }}>DELETE</button>
+            </>
+          )}
           <button onClick={() => signOut(auth)}
             style={{ background: '#fff', border: '1px solid #eee', color: '#888', padding: '6px 12px', borderRadius: 20, fontSize: '0.8rem', cursor: 'pointer' }}>
             로그아웃
           </button>
         </div>
+      </div>
+
+      {/* 탭 스위캘 */}
+      <div style={{ display: 'flex', borderBottom: '1px solid #f0f0f0', background: '#fff' }} className="hide-on-print">
+        {([['receipts', '🧧 영수증'], ['contracts', '📝 근로계약서']] as const).map(([key, label]) => (
+          <button key={key} onClick={() => setAdminTab(key)} style={{
+            flex: 1, padding: '12px 0', border: 'none', background: 'none',
+            fontWeight: adminTab === key ? 700 : 400,
+            color: adminTab === key ? '#9c2c2c' : '#aaa',
+            borderBottom: adminTab === key ? '2px solid #9c2c2c' : '2px solid transparent',
+            cursor: 'pointer', fontSize: '0.9rem', transition: 'all 0.2s',
+          }}>{label}</button>
+        ))}
       </div>
 
       {/* 리포트 모드 (인쇄용) - 활성화 시 메인 목록을 완전히 숨김 */}
@@ -726,28 +789,61 @@ const AdminApp = ({ user }: { user: User }) => {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <p style={{ padding: '4px 20px 12px', fontSize: '0.78rem', color: '#333' }}>{user.email}</p>
 
-          {pending.length === 0 && done.length === 0 && (
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333' }}>
-              <p>아직 접수된 영수증이 없습니다.</p>
-            </div>
-          )}
-
-          {pending.length > 0 && (
-            <>
+          {/* 영수증 탭 */}
+          {adminTab === 'receipts' && (<>
+            {pending.length === 0 && done.length === 0 && (
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333' }}>
+                <p>아직 접수된 영수증이 없습니다.</p>
+              </div>
+            )}
+            {pending.length > 0 && (<>
               <p style={{ color: '#ff9500', fontWeight: 600, padding: '8px 20px 8px' }}>🔔 승인 대기 ({pending.length}건)</p>
               {pending.map(r => <ReportRow key={r.id} r={r} onClick={() => setSelected(r)} />)}
-            </>
-          )}
-
-          {done.length > 0 && (
-            <>
+            </>)}
+            {done.length > 0 && (<>
               <p style={{ color: '#333', fontWeight: 600, padding: '16px 20px 8px' }}>처리 완료 ({done.length}건)</p>
               {done.map(r => <ReportRow key={r.id} r={r} onClick={() => setSelected(r)} />)}
-            </>
-          )}
+            </>)}
+          </>)}
+
+          {/* 근로계약서 탭 */}
+          {adminTab === 'contracts' && (<>
+            {contracts.length === 0 && (
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <p style={{ fontSize: '1.2rem', marginBottom: 10 }}>📝</p>
+                  <p>아직 작성된 근로계약서가 없습니다.</p>
+                </div>
+              </div>
+            )}
+            {contracts.map(c => (
+              <div key={c.id} onClick={() => setSelectedContract(c)} style={S.row}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: '#9c2c2c10', border: '1px solid #9c2c2c20', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1.2rem' }}>
+                  📝
+                </div>
+                <div style={{ flex: 1, overflow: 'hidden' }}>
+                  <div style={{ fontWeight: 700, marginBottom: 2, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span>{c.workerName}</span>
+                    <span style={{ fontSize: '0.75rem', color: '#9c2c2c', background: '#9c2c2c10', padding: '2px 8px', borderRadius: 10, fontWeight: 600 }}>{c.workType}</span>
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: '#555' }}>
+                    {c.siteName} · {c.startDate}~{c.endDate} · {(c.dailyWage || 0).toLocaleString('ko-KR')}원/일
+                  </div>
+                  <div style={{ fontSize: '0.73rem', color: '#aaa', marginTop: 2 }}>
+                    소장: {c.managerName} · 영수증 {(c.linkedReceiptIds || []).length}건 연결
+                  </div>
+                </div>
+                <div style={{ fontSize: '0.7rem', fontWeight: 600, padding: '4px 10px', borderRadius: 4, border: '1px solid #9c2c2c30', color: '#9c2c2c', flexShrink: 0 }}>
+                  SIGNED
+                </div>
+              </div>
+            ))}
+          </>)}
+
           <div style={{ height: 40 }} />
         </div>
       )}
+
 
       {/* 사진 전체화면 */}
       {photoFull && selected?.imageUrl && (
@@ -825,6 +921,100 @@ const AdminApp = ({ user }: { user: User }) => {
           </div>
         </div>
       )}
+
+      {/* 계약서 상세 모달 */}
+      {selectedContract && adminTab === 'contracts' && (
+        <div style={S.modal} onClick={() => setSelectedContract(null)}>
+          <div style={{ ...S.modalBox, maxHeight: '90vh' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <strong style={{ fontSize: '1.1rem' }}>{selectedContract.workerName} 근로계약서</strong>
+              <span style={{ fontSize: '0.8rem', color: '#9c2c2c', fontWeight: 700 }}>{selectedContract.workType}</span>
+            </div>
+
+            {/* 서명 이미지 */}
+            {selectedContract.signatureUrl && (
+              <div style={{ marginBottom: 16, padding: 12, background: '#f9f9f9', borderRadius: 12, border: '1px solid #f0f0f0' }}>
+                <p style={{ fontSize: '0.73rem', color: '#9c2c2c', fontWeight: 700, marginBottom: 8 }}>서명</p>
+                <img src={selectedContract.signatureUrl} alt="서명" style={{ width: '100%', maxHeight: 100, objectFit: 'contain', background: '#fff', borderRadius: 8 }} />
+              </div>
+            )}
+
+            {[  
+              ['현장명', selectedContract.siteName],
+              ['ꫜb85c기간', `${selectedContract.startDate} ~ ${selectedContract.endDate}`],
+              ['연락처', selectedContract.workerPhone],
+              ['주민등록번호', selectedContract.workerIdNum],
+              ['주소', selectedContract.workerAddress],
+              ['계좌', `${selectedContract.bankName} ${selectedContract.bankAccount} (${selectedContract.bankHolder})`],
+              ['일당 총액', `${(selectedContract.dailyWage || 0).toLocaleString('ko-KR')}원`],
+              ['담당 소장', selectedContract.managerName],
+            ].map(([k, v]) => (
+              <div key={k as string} style={S.modalRow}><span style={{ color: '#aaa' }}>{k as string}</span><strong style={{ textAlign: 'right', maxWidth: '60%' }}>{v as string || '-'}</strong></div>
+            ))}
+
+            {/* 연결된 영수증 */}
+            <div style={{ marginTop: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <p style={{ fontSize: '0.8rem', color: '#9c2c2c', fontWeight: 700 }}>식대 영수증 ({(selectedContract.linkedReceiptIds || []).length}건 연결됨)</p>
+                <button onClick={() => { setLinkingContract(selectedContract); setSelectedReceiptIds(selectedContract.linkedReceiptIds || []); setSelectedContract(null); }}
+                  style={{ fontSize: '0.75rem', padding: '6px 12px', borderRadius: 20, border: '1px solid #9c2c2c40', color: '#9c2c2c', background: 'none', cursor: 'pointer', fontWeight: 600 }}>
+                  + 영수증 연결
+                </button>
+              </div>
+              {(selectedContract.linkedReceiptIds || []).map(rid => {
+                const r = reports.find(x => x.id === rid);
+                return r ? (
+                  <div key={rid} style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #f5f5f5' }}>
+                    {r.imageUrl && <img src={r.imageUrl} style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover' }} />}
+                    <span style={{ fontSize: '0.85rem' }}>{r.date} · {r.merchant || r.site} · {r.amount}원</span>
+                  </div>
+                ) : null;
+              })}
+            </div>
+
+            <button onClick={() => setSelectedContract(null)}
+              style={{ width: '100%', marginTop: 16, padding: 14, background: 'transparent', color: '#444', border: '1px solid #eee', borderRadius: 14 }}>
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 영수증 연결 모달 */}
+      {linkingContract && (
+        <div style={S.modal} onClick={() => setLinkingContract(null)}>
+          <div style={{ ...S.modalBox, maxHeight: '85vh' }} onClick={e => e.stopPropagation()}>
+            <p style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: 4 }}>영수증 연결</p>
+            <p style={{ fontSize: '0.8rem', color: '#aaa', marginBottom: 16 }}>{linkingContract.workerName} · {linkingContract.siteName}</p>
+            <div style={{ maxHeight: 360, overflowY: 'auto' }}>
+              {reports.filter(r => r.site === linkingContract.siteName || true).map(r => (
+                <div key={r.id} onClick={() => {
+                  setSelectedReceiptIds(prev =>
+                    prev.includes(r.id) ? prev.filter(i => i !== r.id) : [...prev, r.id]
+                  );
+                }} style={{
+                  display: 'flex', gap: 10, alignItems: 'center', padding: '10px 0',
+                  borderBottom: '1px solid #f5f5f5', cursor: 'pointer',
+                  opacity: selectedReceiptIds.includes(r.id) ? 1 : 0.6,
+                }}>
+                  <div style={{ width: 20, height: 20, borderRadius: 4, border: `2px solid ${selectedReceiptIds.includes(r.id) ? '#9c2c2c' : '#ddd'}`, background: selectedReceiptIds.includes(r.id) ? '#9c2c2c' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {selectedReceiptIds.includes(r.id) && <span style={{ color: 'white', fontSize: '0.7rem' }}>✓</span>}
+                  </div>
+                  {r.imageUrl && <img src={r.imageUrl} style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} />}
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: '0.85rem', fontWeight: 600 }}>{r.date} · {r.amount}원</p>
+                    <p style={{ fontSize: '0.75rem', color: '#888' }}>{r.merchant || r.site} · {r.name}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button onClick={() => linkReceipts(linkingContract.id, selectedReceiptIds)}
+              style={{ width: '100%', marginTop: 16, padding: 16, background: '#9c2c2c', color: 'white', border: 'none', borderRadius: 14, fontWeight: 700 }}>
+              {selectedReceiptIds.length}건 연결 저장
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -867,7 +1057,9 @@ const ReportRow = ({ r, onClick }: { r: Report; onClick: () => void }) => (
 // ROOT
 // ═══════════════════════════════════════════════════════════════════
 export default function App() {
-  const isAdmin = window.location.pathname === '/admin';
+  const path    = window.location.pathname;
+  const isAdmin    = path === '/admin';
+  const isContract = path === '/contract';
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
@@ -878,6 +1070,7 @@ export default function App() {
     });
   }, [isAdmin]);
 
+  if (isContract) return <ContractApp />;
   if (!isAdmin) return <FieldApp />;
   if (authLoading) return (
     <div style={{ ...S.page, justifyContent: 'center', alignItems: 'center' }}>
