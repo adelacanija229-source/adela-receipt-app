@@ -4,7 +4,7 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage
 import { db, storage } from './App';
 
 // ─── 상수 ──────────────────────────────────────────────────────────
-const WORK_TYPES = ['목공', '도배', '타일', '페인트', '철근', '전기', '설비', '미장', '조적', '유리', '기타'];
+const WORK_TYPES = ['목공', '타일', '도배', '전기', '필름', '기타'];
 
 const MANAGERS: Record<string, string[]> = {
   '공무팀': ['배병선', '권재현', '양승곤', '김성진', '김현석', '권오경', '권순범', '윤재호'],
@@ -155,21 +155,46 @@ export const ContractApp = () => {
   const [endDate,       setEndDate]       = useState('');
   const [dailyWage,     setDailyWage]     = useState('');
   const [managerName,   setManagerName]   = useState('');
+  
+  // ── 직접 입력 및 증빙 서류 ───────────────────────────────────────
+  const [customWorkType,  setCustomWorkType]  = useState('');
+  const [idCardFile,      setIdCardFile]      = useState<File | null>(null);
+  const [mealReceiptFile, setMealReceiptFile] = useState<File | null>(null);
+  const [idCardPreview,   setIdCardPreview]   = useState('');
+  const [mealPreview,     setMealPreview]     = useState('');
 
   const wageNum = Number(dailyWage.replace(/,/g, ''));
   const wage    = wageNum > 0 ? calcWage(wageNum) : null;
 
-  const canProceed = !!(workerName && siteName && workType && startDate && endDate && dailyWage && managerName);
+  // 최종 공정명 결정 (목공/타일... 혹은 직접 입력)
+  const finalWorkType = workType === '기타' ? customWorkType.trim() : workType;
+
+  const canProceed = !!(workerName && siteName && finalWorkType && startDate && endDate && dailyWage && managerName);
 
   // ── 서명 완료 후 파이어베이스 저장 ──────────────────────────────────
   const handleSignatureSave = async (blob: Blob) => {
     setView('submitting');
     try {
-      // 1. 서명 이미지 → contract_signatures/ 폴더에 업로드
+      // 1. 이미지들 → 업로드 로직 (병렬 처리)
+      const uploadTask = async (file: File | null, pathPrefix: string) => {
+        if (!file) return '';
+        const path = `contract_attachments/${pathPrefix}_${Date.now()}_${workerName}.png`;
+        const r = storageRef(storage, path);
+        await uploadBytes(r, file);
+        return getDownloadURL(r);
+      };
+
+      // 서명 업로드
       const sigPath = `contract_signatures/${Date.now()}_${workerName}.png`;
       const sigRef  = storageRef(storage, sigPath);
       await uploadBytes(sigRef, blob);
       const signatureUrl = await getDownloadURL(sigRef);
+
+      // 신분증 & 식대 영수증 업로드
+      const [idCardUrl, mealReceiptUrl] = await Promise.all([
+        uploadTask(idCardFile, 'id_card'),
+        uploadTask(mealReceiptFile, 'meal_receipt')
+      ]);
 
       // 2. Firestore contracts 컬렉션에 저장
       await addDoc(collection(db, 'contracts'), {
@@ -181,13 +206,15 @@ export const ContractApp = () => {
         bankAccount:     bankAccount.trim(),
         bankHolder:      bankHolder.trim(),
         siteName:        siteName.trim(),
-        workType,
+        workType:        finalWorkType,
         startDate,
         endDate,
         dailyWage:       wageNum,
         wageBreakdown:   wage,
         managerName,
         signatureUrl,
+        idCardUrl,
+        mealReceiptUrl,
         linkedReceiptIds: [],   // 나중에 관리자가 영수증 연결
         status:          'signed',
         createdAt:       serverTimestamp(),
@@ -204,8 +231,10 @@ export const ContractApp = () => {
   const reset = () => {
     setWorkerName(''); setWorkerIdNum(''); setWorkerPhone(''); setWorkerAddress('');
     setBankName(''); setBankAccount(''); setBankHolder('');
-    setSiteName(''); setWorkType(''); setStartDate(''); setEndDate('');
+    setSiteName(''); setWorkType(''); setCustomWorkType(''); setStartDate(''); setEndDate('');
     setDailyWage(''); setManagerName('');
+    setIdCardFile(null); setMealReceiptFile(null);
+    setIdCardPreview(''); setMealPreview('');
     setView('form');
   };
 
@@ -275,11 +304,93 @@ export const ContractApp = () => {
                 border:     workType === t ? '1px solid #9c2c2c' : '1px solid #efefef',
                 color:      workType === t ? '#9c2c2c' : '#666',
                 fontWeight: workType === t ? 700 : 400,
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
               }}>
                 {t}
               </div>
             ))}
           </div>
+
+          {/* 직접 입력 (기타 선택 시) */}
+          {workType === '기타' && (
+            <div style={{ marginTop: 12 }}>
+              <input
+                style={CS.input}
+                placeholder="공정명을 직접 입력하세요 (예: 설비, 미장...)"
+                value={customWorkType}
+                onChange={e => setCustomWorkType(e.target.value)}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* 증빙 서류 첨부 */}
+        <div style={CS.section}>
+          <p style={CS.sectionTitle}>증빙 서류 첨부</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            {/* 신분증 */}
+            <div style={{ position: 'relative' }}>
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                id="id-card-upload"
+                style={{ display: 'none' }}
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setIdCardFile(file);
+                    setIdCardPreview(URL.createObjectURL(file));
+                  }
+                }}
+              />
+              <label htmlFor="id-card-upload" style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                height: 120, border: '1px dashed #ddd', borderRadius: 16, background: '#fff', cursor: 'pointer'
+              }}>
+                {idCardPreview ? (
+                  <img src={idCardPreview} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 16 }} />
+                ) : (
+                  <>
+                    <span style={{ fontSize: '1.4rem', marginBottom: 4 }}>💳</span>
+                    <span style={{ fontSize: '0.8rem', color: '#999' }}>신분증 촬영</span>
+                  </>
+                )}
+              </label>
+            </div>
+
+            {/* 식대 영수증 */}
+            <div style={{ position: 'relative' }}>
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                id="meal-receipt-upload"
+                style={{ display: 'none' }}
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setMealReceiptFile(file);
+                    setMealPreview(URL.createObjectURL(file));
+                  }
+                }}
+              />
+              <label htmlFor="meal-receipt-upload" style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                height: 120, border: '1px dashed #ddd', borderRadius: 16, background: '#fff', cursor: 'pointer'
+              }}>
+                {mealPreview ? (
+                  <img src={mealPreview} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 16 }} />
+                ) : (
+                  <>
+                    <span style={{ fontSize: '1.4rem', marginBottom: 4 }}>🧾</span>
+                    <span style={{ fontSize: '0.8rem', color: '#999' }}>식대 영수증</span>
+                  </>
+                )}
+              </label>
+            </div>
+          </div>
+          <p style={{ fontSize: '0.75rem', color: '#aaa', marginTop: 8, paddingLeft: 4 }}>※ 서류가 많을 경우 마지막 영수증만 첨부해 주세요.</p>
         </div>
 
         {/* 근로자 정보 */}

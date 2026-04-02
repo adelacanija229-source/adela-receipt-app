@@ -23,6 +23,8 @@ export interface Contract {
   };
   managerName: string;
   signatureUrl: string;
+  idCardUrl?: string; // 신분증 사진 URL
+  mealReceiptUrl?: string; // 식대 영수증 사진 URL
   status: string;
   createdAt: any;
 }
@@ -171,7 +173,7 @@ export const ContractPrintView = ({ contract, onClose }: { contract: Contract; o
                         <td style={{ border: 'none', padding: 0 }}>1일 3시간</td>
                         <td style={{ border: 'none', padding: 0 }}>₩ &nbsp;{formatKRW(contract.wageBreakdown?.holiday || 0)}</td>
                         <td colSpan={2} style={{ border: 'none', padding: 0, textAlign: 'center', color: '#cc0000' }}>
-                          {['목공', '타일', '설비'].includes(contract.workType) ? '※ 공구대는 별도 10만원 지급한다.' : ''}
+                          {contract.workType === '목공' ? '※ 공구대는 별도 10만원 지급한다.' : ''}
                         </td>
                       </tr>
                     </tbody>
@@ -291,6 +293,41 @@ export const ContractPrintView = ({ contract, onClose }: { contract: Contract; o
 
           </div>
         </div>
+
+        {/* ─── 2페이지: 첨부 서류 (신분증/영수증) ─── */}
+        {(contract.idCardUrl || contract.mealReceiptUrl) && (
+          <div style={{ ...styles.page, pageBreakBefore: 'always', marginTop: '20mm' }}>
+            <div style={styles.titleContainer}>
+              <h2 style={styles.mainTitle}>첨 부 서 류 (증빙)</h2>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '30px', marginTop: '20px' }}>
+              {/* 신분증 구역 */}
+              {contract.idCardUrl && (
+                <div style={{ border: '1px solid #000', padding: '15px' }}>
+                  <p style={{ fontWeight: 700, marginBottom: '10px', fontSize: '1rem' }}>[ 신분증 사진 ]</p>
+                  <div style={{ width: '100%', textAlign: 'center' }}>
+                    <img src={contract.idCardUrl} alt="신분증" style={{ maxWidth: '100%', maxHeight: '100mm', objectFit: 'contain' }} />
+                  </div>
+                </div>
+              )}
+
+              {/* 식대 영수증 구역 */}
+              {contract.mealReceiptUrl && (
+                <div style={{ border: '1px solid #000', padding: '15px' }}>
+                  <p style={{ fontWeight: 700, marginBottom: '10px', fontSize: '1rem' }}>[ 식대 영수증 사진 ]</p>
+                  <div style={{ width: '100%', textAlign: 'center' }}>
+                    <img src={contract.mealReceiptUrl} alt="식대 영수증" style={{ maxWidth: '100%', maxHeight: '100mm', objectFit: 'contain' }} />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div style={{ marginTop: 'auto', textAlign: 'center', fontSize: '0.8rem', color: '#666', paddingBottom: '10mm' }}>
+              본 서류는 일용근로계약의 증빙 용도로만 사용됩니다.
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
