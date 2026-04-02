@@ -329,38 +329,48 @@ export const ContractApp = () => {
           <p style={CS.sectionTitle}>증빙 서류 첨부 (선택)</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             
-            {/* 신분증 */}
-            <div style={{ position: 'relative' }}>
-              <input type="file" accept="image/*" id="id-upload" style={{ display: 'none' }}
-                onChange={e => { const f = e.target.files?.[0]; if (f) { setIdCardFile(f); setIdCardPreview(URL.createObjectURL(f)); }}} />
-              <label htmlFor="id-upload" style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                height: 100, border: '1px solid #ddd', borderRadius: 16, background: '#fff', 
-                cursor: 'pointer', fontSize: '0.95rem', fontWeight: 700, color: '#333', overflow: 'hidden'
-              }}>
+            {/* 신분증 구역 */}
+            <div style={{ border: '1px solid #ddd', borderRadius: 16, background: '#fff', overflow: 'hidden' }}>
+              <div style={{ height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', background: '#fafafa' }}>
                 {idCardPreview ? (
                   <img src={idCardPreview} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : '신분증'}
-              </label>
+                ) : <span style={{ color: '#888', fontWeight: 600 }}>신분증</span>}
+              </div>
+              <div style={{ display: 'flex', borderTop: '1px solid #eee' }}>
+                {/* 촬영 버튼 (카메라 강제) */}
+                <input type="file" accept="image/*" capture="environment" id="id-cam" style={{ display: 'none' }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) { setIdCardFile(f); setIdCardPreview(URL.createObjectURL(f)); }}} />
+                <label htmlFor="id-cam" style={{ flex: 1, padding: '12px 0', textAlign: 'center', fontSize: '0.85rem', fontWeight: 700, borderRight: '1px solid #eee', cursor: 'pointer', color: '#1a1a1a' }}>촬영</label>
+                
+                {/* 앨범 버튼 (갤러리 선택) */}
+                <input type="file" accept="image/*" id="id-album" style={{ display: 'none' }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) { setIdCardFile(f); setIdCardPreview(URL.createObjectURL(f)); }}} />
+                <label htmlFor="id-album" style={{ flex: 1, padding: '12px 0', textAlign: 'center', fontSize: '0.85rem', color: '#666', cursor: 'pointer' }}>앨범</label>
+              </div>
             </div>
 
-            {/* 식대 영수증 */}
-            <div style={{ position: 'relative' }}>
-              <input type="file" accept="image/*" id="meal-upload" style={{ display: 'none' }}
-                onChange={e => { const f = e.target.files?.[0]; if (f) { setMealReceiptFile(f); setMealPreview(URL.createObjectURL(f)); }}} />
-              <label htmlFor="meal-upload" style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                height: 100, border: '1px solid #ddd', borderRadius: 16, background: '#fff', 
-                cursor: 'pointer', fontSize: '0.95rem', fontWeight: 700, color: '#333', overflow: 'hidden'
-              }}>
+            {/* 식대 영수증 구역 */}
+            <div style={{ border: '1px solid #ddd', borderRadius: 16, background: '#fff', overflow: 'hidden' }}>
+              <div style={{ height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', background: '#fafafa' }}>
                 {mealPreview ? (
                   <img src={mealPreview} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : '식대영수증'}
-              </label>
+                ) : <span style={{ color: '#888', fontWeight: 600 }}>식대영수증</span>}
+              </div>
+              <div style={{ display: 'flex', borderTop: '1px solid #eee' }}>
+                {/* 촬영 버튼 (카메라 강제) */}
+                <input type="file" accept="image/*" capture="environment" id="meal-cam" style={{ display: 'none' }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) { setMealReceiptFile(f); setMealPreview(URL.createObjectURL(f)); }}} />
+                <label htmlFor="meal-cam" style={{ flex: 1, padding: '12px 0', textAlign: 'center', fontSize: '0.85rem', fontWeight: 700, borderRight: '1px solid #eee', cursor: 'pointer', color: '#1a1a1a' }}>촬영</label>
+                
+                {/* 앨범 버튼 (갤러리 선택) */}
+                <input type="file" accept="image/*" id="meal-album" style={{ display: 'none' }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) { setMealReceiptFile(f); setMealPreview(URL.createObjectURL(f)); }}} />
+                <label htmlFor="meal-album" style={{ flex: 1, padding: '12px 0', textAlign: 'center', fontSize: '0.85rem', color: '#666', cursor: 'pointer' }}>앨범</label>
+              </div>
             </div>
 
           </div>
-          <p style={{ fontSize: '0.7rem', color: '#aaa', marginTop: 8, paddingLeft: 4 }}>※ 사진을 선택하거나 촬영하여 첨부할 수 있습니다.</p>
+          <p style={{ fontSize: '0.7rem', color: '#aaa', marginTop: 10, paddingLeft: 4 }}>※ 촬영 시 바로 카메라가 작동하고, 앨범은 저장된 사진을 선택합니다.</p>
         </div>
 
         {/* 근로자 정보 */}
