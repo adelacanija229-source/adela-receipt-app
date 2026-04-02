@@ -178,14 +178,17 @@ export const ContractApp = () => {
       // 1. 이미지들 → 업로드 로직 (병렬 처리)
       const uploadTask = async (file: File | null, pathPrefix: string) => {
         if (!file) return '';
-        const path = `contract_attachments/${pathPrefix}_${Date.now()}_${workerName}.png`;
+        // 파일 경로에서 공백 및 특수문자 제거
+        const safeName = workerName.replace(/[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]/g, '');
+        const path = `contract_signatures/attach_${pathPrefix}_${Date.now()}_${safeName}.png`;
         const r = storageRef(storage, path);
         await uploadBytes(r, file);
         return getDownloadURL(r);
       };
 
-      // 서명 업로드
-      const sigPath = `contract_signatures/${Date.now()}_${workerName}.png`;
+      // 서명 업로드 (공용 폴더 사용)
+      const safeName = workerName.replace(/[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]/g, '');
+      const sigPath = `contract_signatures/sig_${Date.now()}_${safeName}.png`;
       const sigRef  = storageRef(storage, sigPath);
       await uploadBytes(sigRef, blob);
       const signatureUrl = await getDownloadURL(sigRef);
@@ -221,10 +224,10 @@ export const ContractApp = () => {
       });
 
       setView('done');
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       setView('form');
-      alert('제출에 실패했습니다. 인터넷 연결을 확인 후 다시 시도해 주세요.');
+      alert(`제출에 실패했습니다: ${err.message || '인터넷 연결을 확인 후 다시 시도해 주세요.'}`);
     }
   };
 
