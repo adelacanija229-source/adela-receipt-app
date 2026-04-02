@@ -333,7 +333,6 @@ export const ContractApp = () => {
               <input
                 type="file"
                 accept="image/*"
-                capture="environment"
                 id="id-card-upload"
                 style={{ display: 'none' }}
                 onChange={e => {
@@ -364,7 +363,6 @@ export const ContractApp = () => {
               <input
                 type="file"
                 accept="image/*"
-                capture="environment"
                 id="meal-receipt-upload"
                 style={{ display: 'none' }}
                 onChange={e => {
@@ -396,7 +394,7 @@ export const ContractApp = () => {
         {/* 근로자 정보 */}
         <div style={CS.section}>
           <p style={CS.sectionTitle}>근로자 정보</p>
-          <label style={CS.label}>성명 <span style={{ color: '#9c2c2c' }}>*</span></label>
+          <label style={CS.label}>성명 <span style={{ color: '#9c2c2c' }}>* (필수)</span></label>
           <input style={CS.input} placeholder="홍길동" value={workerName} onChange={e => setWorkerName(e.target.value)} />
 
           <label style={{ ...CS.label, marginTop: 14 }}>주민등록번호</label>
@@ -432,7 +430,7 @@ export const ContractApp = () => {
         {/* 현장 정보 */}
         <div style={CS.section}>
           <p style={CS.sectionTitle}>현장 정보</p>
-          <label style={CS.label}>현장명 <span style={{ color: '#9c2c2c' }}>*</span></label>
+          <label style={CS.label}>현장명 <span style={{ color: '#9c2c2c' }}>* (필수)</span></label>
           <input style={CS.input} placeholder="압구정 현장"
             value={siteName} onChange={e => setSiteName(e.target.value)} />
         </div>
@@ -495,7 +493,7 @@ export const ContractApp = () => {
 
         {/* 담당 소장 */}
         <div style={CS.section}>
-          <p style={CS.sectionTitle}>작성자 (소장)</p>
+          <p style={CS.sectionTitle}>작성자 (소장) <span style={{ color: '#9c2c2c' }}>(필수)</span></p>
           <label style={CS.label}>소장 이름 <span style={{ color: '#9c2c2c' }}>*</span></label>
           <div onClick={() => setShowPicker(true)} style={{
             ...CS.input, display: 'flex', justifyContent: 'space-between',
