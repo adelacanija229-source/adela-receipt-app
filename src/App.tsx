@@ -68,6 +68,8 @@ interface Contract {
   managerName: string;
   signatureUrl: string;
   linkedReceiptIds: string[];
+  idCardUrl?: string;
+  mealReceiptUrl?: string;
   status: string;
   createdAt: any;
 }
@@ -949,10 +951,33 @@ const AdminApp = ({ user }: { user: User }) => {
             </div>
 
             {/* 서명 이미지 */}
+            {/* 서명 이미지 */}
             {selectedContract.signatureUrl && (
               <div style={{ marginBottom: 16, padding: 12, background: '#f9f9f9', borderRadius: 12, border: '1px solid #f0f0f0' }}>
-                <p style={{ fontSize: '0.73rem', color: '#9c2c2c', fontWeight: 700, marginBottom: 8 }}>서명</p>
+                <p style={{ fontSize: '0.73rem', color: '#9c2c2c', fontWeight: 700, marginBottom: 8 }}>근로자 서명</p>
                 <img src={selectedContract.signatureUrl} alt="서명" style={{ width: '100%', maxHeight: 100, objectFit: 'contain', background: '#fff', borderRadius: 8 }} />
+              </div>
+            )}
+
+            {/* 첨부 서류 (신분증/직접 촬영 영수증) */}
+            {(selectedContract.idCardUrl || selectedContract.mealReceiptUrl) && (
+              <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+                {selectedContract.idCardUrl && (
+                  <div style={{ flex: 1, padding: 10, background: '#f9f9f9', borderRadius: 12, border: '1px solid #f0f0f0' }}>
+                    <p style={{ fontSize: '0.73rem', color: '#333', fontWeight: 700, marginBottom: 6 }}>첨부: 신분증</p>
+                    <img src={selectedContract.idCardUrl} alt="신분증" 
+                       onClick={() => setSelected({ imageUrl: selectedContract.idCardUrl } as any)}
+                       style={{ width: '100%', height: 60, objectFit: 'cover', borderRadius: 6, cursor: 'pointer' }} />
+                  </div>
+                )}
+                {selectedContract.mealReceiptUrl && (
+                  <div style={{ flex: 1, padding: 10, background: '#f9f9f9', borderRadius: 12, border: '1px solid #f0f0f0' }}>
+                    <p style={{ fontSize: '0.73rem', color: '#333', fontWeight: 700, marginBottom: 6 }}>첨부: 식대영수증</p>
+                    <img src={selectedContract.mealReceiptUrl} alt="영수증" 
+                       onClick={() => setSelected({ imageUrl: selectedContract.mealReceiptUrl } as any)}
+                       style={{ width: '100%', height: 60, objectFit: 'cover', borderRadius: 6, cursor: 'pointer' }} />
+                  </div>
+                )}
               </div>
             )}
 
