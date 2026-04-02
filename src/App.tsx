@@ -642,6 +642,15 @@ const AdminApp = ({ user }: { user: User }) => {
       setSelected(null);
     } catch { alert('삭제 실패. 다시 시도해주세요.'); }
   };
+ 
+  // 계약서 삭제
+  const deleteContract = async (id: string) => {
+    if (!window.confirm('이 근로계약서를 삭제하시겠습니까?\n삭제 후에는 복구가 불가능합니다.')) return;
+    try {
+      await deleteDoc(doc(db, 'contracts', id));
+      setSelectedContract(null);
+    } catch { alert('삭제 실패. 다시 시도해주세요.'); }
+  };
 
   // 기간 일괄 삭제
   const bulkDeleteBefore = async () => {
@@ -819,24 +828,30 @@ const AdminApp = ({ user }: { user: User }) => {
               </div>
             )}
             {contracts.map(c => (
-              <div key={c.id} onClick={() => setSelectedContract(c)} style={S.row}>
-                <div style={{ width: 44, height: 44, borderRadius: 12, background: '#9c2c2c10', border: '1px solid #9c2c2c20', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1.2rem' }}>
-                  📝
+              <div key={c.id} style={{ ...S.row, padding: '12px 16px' }}>
+                <div onClick={() => setSelectedContract(c)} style={{ display: 'flex', flex: 1, gap: 12, overflow: 'hidden', alignItems: 'center' }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: '#9c2c2c10', border: '1px solid #9c2c2c20', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1.1rem' }}>
+                    📝
+                  </div>
+                  <div style={{ flex: 1, overflow: 'hidden' }}>
+                    <div style={{ fontWeight: 700, marginBottom: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: '0.95rem' }}>{c.workerName}</span>
+                      <span style={{ fontSize: '0.7rem', color: '#9c2c2c', background: '#9c2c2c10', padding: '1px 6px', borderRadius: 6, fontWeight: 600 }}>{c.workType}</span>
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#555', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {c.siteName} · {c.startDate.slice(5)}~{c.endDate.slice(5)}
+                    </div>
+                  </div>
                 </div>
-                <div style={{ flex: 1, overflow: 'hidden' }}>
-                  <div style={{ fontWeight: 700, marginBottom: 2, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span>{c.workerName}</span>
-                    <span style={{ fontSize: '0.75rem', color: '#9c2c2c', background: '#9c2c2c10', padding: '2px 8px', borderRadius: 10, fontWeight: 600 }}>{c.workType}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                  <div style={{ fontSize: '0.65rem', fontWeight: 700, padding: '3px 8px', borderRadius: 4, background: '#9c2c2c', color: 'white' }}>
+                    SIGNED
                   </div>
-                  <div style={{ fontSize: '0.78rem', color: '#555' }}>
-                    {c.siteName} · {c.startDate}~{c.endDate} · {(c.dailyWage || 0).toLocaleString('ko-KR')}원/일
-                  </div>
-                  <div style={{ fontSize: '0.73rem', color: '#aaa', marginTop: 2 }}>
-                    소장: {c.managerName} · 영수증 {(c.linkedReceiptIds || []).length}건 연결
-                  </div>
-                </div>
-                <div style={{ fontSize: '0.7rem', fontWeight: 600, padding: '4px 10px', borderRadius: 4, border: '1px solid #9c2c2c30', color: '#9c2c2c', flexShrink: 0 }}>
-                  SIGNED
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); deleteContract(c.id); }}
+                    style={{ background: 'none', border: 'none', color: '#ff3b30', fontSize: '1.2rem', cursor: 'pointer', padding: '4px' }}>
+                    🗑️
+                  </button>
                 </div>
               </div>
             ))}
@@ -1039,20 +1054,21 @@ const ReportRow = ({ r, onClick }: { r: Report; onClick: () => void }) => (
         </div>
     }
     <div style={{ flex: 1, overflow: 'hidden' }}>
-      <div style={{ fontWeight: 600, marginBottom: 2, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      <div style={{ fontWeight: 700, marginBottom: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <span style={{ fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {r.merchant || r.site}
         </span>
         {r.amount && (
-          <span style={{ color: '#1a1a1a', fontWeight: 700, flexShrink: 0 }}>
+          <span style={{ color: '#9c2c2c', fontWeight: 800, flexShrink: 0, fontSize: '0.9rem' }}>
             {r.amount}원
           </span>
         )}
       </div>
-      <div style={{ fontSize: '0.78rem', color: '#555' }}>
-        {r.purpose && <span style={{ color: '#007aff', fontWeight: 600 }}>[{r.purpose}] </span>}
-        {r.name} · {r.site} · {timeAgo(r.createdAt)}
+      <div style={{ fontSize: '0.78rem', color: '#666', display: 'flex', alignItems: 'center', gap: 6 }}>
+        {r.purpose && <span style={{ color: '#007aff', fontWeight: 600 }}>[{r.purpose}]</span>}
+        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name} · {r.site}</span>
       </div>
+      <div style={{ fontSize: '0.7rem', color: '#aaa', marginTop: 2 }}>{timeAgo(r.createdAt)}</div>
     </div>
     <div style={{
       fontSize: '0.7rem', fontWeight: 600, padding: '4px 10px', borderRadius: 4, flexShrink: 0,
