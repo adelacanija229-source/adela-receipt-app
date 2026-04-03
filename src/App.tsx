@@ -295,12 +295,11 @@ const FieldApp = () => {
 
         <style>{`
           @keyframes fadeInLogo {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 0.95; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
           }
           .logo-premium {
-            animation: fadeInLogo 1.2s ease-out forwards;
-            mix-blend-mode: multiply;
+            animation: fadeInLogo 1.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
           }
         `}</style>
 
@@ -310,9 +309,9 @@ const FieldApp = () => {
           maxWidth: 320, 
           display: 'flex', 
           justifyContent: 'center', 
-          filter: 'drop-shadow(0 12px 24px rgba(0,0,0,0.03))',
           margin: '10px 0',
-          position: 'relative'
+          position: 'relative',
+          mixBlendMode: 'multiply' as 'multiply', // 부모 레벨에서 블렌딩 적용
         }}>
           <img src="logo.png" alt="ADELA Design Team" 
             onError={(e) => (e.currentTarget.style.display = 'none')}
@@ -321,6 +320,7 @@ const FieldApp = () => {
               width: '100%', 
               height: 'auto', 
               objectFit: 'contain',
+              display: 'block'
             }} />
         </div>
 
