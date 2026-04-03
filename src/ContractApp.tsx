@@ -216,7 +216,6 @@ export const ContractApp = () => {
   // 최종 공정명 결정 (목공/타일... 혹은 직접 입력)
   const finalWorkType = workType === '기타' ? customWorkType.trim() : workType;
 
-  const canProceed = !!(workerName && siteName && finalWorkType && startDate && endDate && dailyWage && managerName);
 
   // ── 서명 완료 후 파이어베이스 저장 ──────────────────────────────────
   const handleSignatureSave = async (blob: Blob) => {

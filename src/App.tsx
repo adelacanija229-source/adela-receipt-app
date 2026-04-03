@@ -642,7 +642,7 @@ const AdminSummary = ({ reports, contracts }: { reports: Report[], contracts: Co
   );
 };
 
-const AdminApp = ({ user }: { user: User }) => {
+const AdminApp = ({ user: _user }: { user: User }) => {
   const [reports, setReports] = useState<Report[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [adminTab, setAdminTab] = useState<'reports' | 'contracts'>('reports');
