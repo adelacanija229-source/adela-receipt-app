@@ -293,11 +293,35 @@ const FieldApp = () => {
           <div style={{ position: 'absolute', bottom: -30, left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', fontSize: '0.75rem', fontWeight: 800, color: '#9c2c2c', letterSpacing: '0.1em' }}>TAP TO REPORT</div>
         </div>
 
+        <style>{`
+          @keyframes fadeInLogo {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 0.95; transform: translateY(0); }
+          }
+          .logo-premium {
+            animation: fadeInLogo 1.2s ease-out forwards;
+            mix-blend-mode: multiply;
+          }
+        `}</style>
+
         {/* 대형 로고 (중앙 배치) */}
-        <div style={{ width: '100%', maxWidth: 300, display: 'flex', justifyContent: 'center', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.05))' }}>
+        <div style={{ 
+          width: '100%', 
+          maxWidth: 320, 
+          display: 'flex', 
+          justifyContent: 'center', 
+          filter: 'drop-shadow(0 12px 24px rgba(0,0,0,0.03))',
+          margin: '10px 0',
+          position: 'relative'
+        }}>
           <img src="logo.png" alt="ADELA Design Team" 
             onError={(e) => (e.currentTarget.style.display = 'none')}
-            style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
+            className="logo-premium"
+            style={{ 
+              width: '100%', 
+              height: 'auto', 
+              objectFit: 'contain',
+            }} />
         </div>
 
         {/* 하단 안내 및 보조 액션 */}
