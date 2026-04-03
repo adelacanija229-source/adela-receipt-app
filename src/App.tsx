@@ -67,7 +67,6 @@ interface Contract {
   wageBreakdown: { base: number; overtime: number; holiday: number; weekly: number };
   managerName: string;
   signatureUrl: string;
-  linkedReceiptIds: string[];
   idCardUrl?: string;
   mealReceiptUrl?: string;
   status: string;
@@ -260,52 +259,88 @@ const FieldApp = () => {
 
   // ── HOME ──────────────────────────────────────────────────────
   if (view === 'home') return (
-    <div style={{ ...S.page, justifyContent: 'center', padding: '0 24px' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 60 }}>
+    <div style={{ 
+      ...S.page, 
+      justifyContent: 'center', 
+      padding: '0 24px',
+      background: 'linear-gradient(145deg, #fcfcfc 0%, #f0f0f0 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* 장식용 배경 요소 */}
+      <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(156, 44, 44, 0.03) 0%, transparent 70%)', borderRadius: '50%' }} />
+      <div style={{ position: 'absolute', bottom: '-5%', left: '-5%', width: '200px', height: '200px', background: 'radial-gradient(circle, rgba(0, 122, 255, 0.02) 0%, transparent 70%)', borderRadius: '50%' }} />
+
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 50, position: 'relative', zIndex: 1 }}>
         
-        {/* 카메라 라인 아이콘 (로고 위) */}
-        <label style={{ ...S.cameraBtn, border: 'none', boxShadow: 'none', background: 'transparent' }}>
-          <input type="file" accept="image/*" capture="environment" ref={cameraInputRef}
-            onChange={handlePhoto} style={{ display: 'none' }} />
-          <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-            <circle cx="12" cy="13" r="4"></circle>
-          </svg>
-        </label>
+        {/* 카메라 메인 버튼 (플로팅 효과) */}
+        <div style={{ position: 'relative' }}>
+          <label style={{ 
+            ...S.cameraBtn, 
+            border: 'none', 
+            background: '#fff', 
+            boxShadow: '0 20px 40px rgba(0,0,0,0.08), 0 0 0 4px #fff',
+            width: 100, height: 100, borderRadius: 50,
+            transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+          }} className="hover-scale">
+            <input type="file" accept="image/*" capture="environment" ref={cameraInputRef}
+              onChange={handlePhoto} style={{ display: 'none' }} />
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9c2c2c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+          </label>
+          <div style={{ position: 'absolute', bottom: -30, left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', fontSize: '0.75rem', fontWeight: 800, color: '#9c2c2c', letterSpacing: '0.1em' }}>TAP TO REPORT</div>
+        </div>
 
         {/* 대형 로고 (중앙 배치) */}
-        <div style={{ width: '100%', maxWidth: 360, display: 'flex', justifyContent: 'center' }}>
+        <div style={{ width: '100%', maxWidth: 300, display: 'flex', justifyContent: 'center', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.05))' }}>
           <img src="logo.png" alt="ADELA Design Team" 
             onError={(e) => (e.currentTarget.style.display = 'none')}
             style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
         </div>
 
         {/* 하단 안내 및 보조 액션 */}
-        <div style={{ width: '100%', textAlign: 'center' }}>
-          <p style={{ color: '#aaa', fontSize: '0.8rem', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 32 }}>RECEIPT REPORT SYSTEM</p>
+        <div style={{ width: '100%', textAlign: 'center', marginTop: 10 }}>
+          <p style={{ color: '#aaa', fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 40, fontWeight: 500 }}>RECEIPT REPORT SYSTEM <span style={{ color: '#ddd', margin: '0 4px' }}>|</span> VER 7.0 GOLD</p>
           
-          <label style={{ cursor: 'pointer', color: '#1a1a1a', fontWeight: 600, fontSize: '0.9rem', borderBottom: '1px solid #1a1a1a', paddingBottom: 4 }}>
-            <input type="file" accept="image/*" ref={galleryInputRef} onChange={handlePhoto} style={{ display: 'none' }} />
-            OPEN GALLERY
-          </label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 260, margin: '0 auto' }}>
+            <label style={{ 
+              cursor: 'pointer', background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(10px)', 
+              border: '1px solid rgba(0,0,0,0.05)', borderRadius: 16, padding: '14px', 
+              fontSize: '0.85rem', fontWeight: 700, color: '#333', 
+              boxShadow: '0 4px 12px rgba(0,0,0,0.03)', display: 'block'
+            }}>
+              <input type="file" accept="image/*" ref={galleryInputRef} onChange={handlePhoto} style={{ display: 'none' }} />
+              📷 OPEN GALLERY
+            </label>
 
-          <button onClick={() => window.location.href = '/contract'}
-            style={{ display: 'block', margin: '24px auto 0', background: 'none', border: '1px solid #9c2c2c40', borderRadius: 40, color: '#9c2c2c', fontSize: '0.82rem', cursor: 'pointer', letterSpacing: '0.05em', padding: '10px 28px', fontWeight: 600 }}>
-            · 일용직 근로계약서 ·
-          </button>
+            <button onClick={() => window.location.href = '/contract'}
+              style={{ 
+                background: '#1a1a1a', border: 'none', borderRadius: 16, 
+                color: 'white', fontSize: '0.85rem', cursor: 'pointer', 
+                letterSpacing: '0.02em', padding: '15px', fontWeight: 700,
+                boxShadow: '0 10px 20px rgba(0,0,0,0.15)'
+              }}>
+              📝 일용직 근로계약서 작성
+            </button>
+          </div>
 
           <button onClick={() => window.location.href = '/admin'}
-            style={{ display: 'block', margin: '20px auto 0', background: 'none', border: 'none', color: '#888', fontSize: '0.75rem', cursor: 'pointer', letterSpacing: '0.05em' }}>
+            style={{ display: 'block', margin: '32px auto 0', background: 'none', border: 'none', color: '#999', fontSize: '0.72rem', cursor: 'pointer', letterSpacing: '0.05em', opacity: 0.8 }}>
             ADMIN ACCESS
           </button>
         </div>
       </div>
       
       {/* 오늘 접수 현황 (하단 정돈) */}
-      <div style={{ position: 'absolute', bottom: 40, left: 0, right: 0, textAlign: 'center' }}>
-        <span style={{ color: '#ccc', fontSize: '0.65rem', fontWeight: 500 }}>
-          TOTAL SUBMISSIONS TODAY: {todayCount}
-        </span>
+      <div style={{ position: 'absolute', bottom: 30, left: 0, right: 0, textAlign: 'center' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(0,0,0,0.03)', padding: '6px 14px', borderRadius: 20 }}>
+          <div style={{ width: 6, height: 6, borderRadius: 3, background: '#34c759' }} />
+          <span style={{ color: '#888', fontSize: '0.62rem', fontWeight: 600, letterSpacing: '0.02em' }}>
+            TODAY: {todayCount} REPORTS COMPLETE
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -511,129 +546,151 @@ const AdminLogin = () => {
   };
 
   return (
-    <div style={{ ...S.page, justifyContent: 'center', padding: '0 24px' }}>
-      <div style={{ textAlign: 'center', marginBottom: 40 }}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>🔐</div>
-        <p style={{ fontSize: '1.5rem', fontWeight: 800 }}>관리자 로그인</p>
-        <p style={{ color: '#555', marginTop: 8, fontSize: '0.9rem' }}>(주)아델라 관리자 전용</p>
-      </div>
-      <div style={{ position: 'absolute', top: 20, left: 20 }}>
-        <button onClick={() => window.location.href = '/'} 
-          style={{ background: 'none', border: '1px solid #eee', color: '#999', padding: '8px 12px', borderRadius: 20, fontSize: '0.8rem', cursor: 'pointer' }}>
-          ⬅ 홈으로
-        </button>
-      </div>
-      <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div>
-          <label style={S.label}>이메일</label>
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-            placeholder="admin@adela.com" style={S.input} required />
+    <div style={{ 
+      ...S.page, 
+      justifyContent: 'center', 
+      padding: '0 24px',
+      background: '#121212',
+      color: '#fff'
+    }}>
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <div style={{ textAlign: 'center', marginBottom: 48 }}>
+          <div style={{ 
+            width: 80, height: 80, background: 'linear-gradient(135deg, #9c2c2c 0%, #ee3a3a 100%)', 
+            borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 24px', boxShadow: '0 12px 32px rgba(156, 44, 44, 0.3)'
+          }}>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          </div>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 900, letterSpacing: '-0.02em', margin: 0 }}>ADMIN ACCESS</h2>
+          <p style={{ color: '#888', marginTop: 10, fontSize: '0.85rem' }}>(주)아델라 디자인팀 관리자 전용</p>
         </div>
-        <div>
-          <label style={S.label}>비밀번호</label>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)}
-            placeholder="비밀번호 입력" style={S.input} required />
+
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ position: 'relative' }}>
+            <label style={{ ...S.label, color: '#666', fontSize: '0.7rem' }}>EMAIL ADDRESS</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+              placeholder="admin@adela.com" 
+              style={{ 
+                ...S.input, 
+                background: '#1e1e1e', border: '1px solid #333', 
+                color: '#fff', borderRadius: 14 
+              }} required />
+          </div>
+          <div style={{ position: 'relative' }}>
+            <label style={{ ...S.label, color: '#666', fontSize: '0.7rem' }}>SECRET KEY</label>
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+              placeholder="••••••••" 
+              style={{ 
+                ...S.input, 
+                background: '#1e1e1e', border: '1px solid #333', 
+                color: '#fff', borderRadius: 14 
+              }} required />
+          </div>
+          {error && <p style={{ color: '#ff453a', fontSize: '0.8rem', textAlign: 'center', marginTop: -4 }}>{error}</p>}
+          <button type="submit" disabled={loading}
+            style={{ 
+              ...S.submitBtn, 
+              background: '#fff', color: '#000', 
+              margin: '12px 0 0', height: 60, borderRadius: 16,
+              opacity: loading ? 0.6 : 1, width: '100%',
+              boxShadow: '0 10px 30px rgba(255,255,255,0.1)'
+            }}>
+            {loading ? 'AUTHENTICATING...' : 'LOGIN TO DASHBOARD'}
+          </button>
+        </form>
+
+        <div style={{ textAlign: 'center', marginTop: 32 }}>
+          <button onClick={() => window.location.href = '/'} 
+            style={{ background: 'none', border: 'none', color: '#666', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600 }}>
+            ← BACK TO FIELD REPORT
+          </button>
         </div>
-        {error && <p style={{ color: '#ff3b30', fontSize: '0.85rem', textAlign: 'center' }}>{error}</p>}
-        <button type="submit" disabled={loading}
-          style={{ ...S.submitBtn, margin: '8px 0 0', opacity: loading ? 0.6 : 1 }}>
-          {loading ? '로그인 중...' : '로그인'}
-        </button>
-      </form>
+      </div>
+
+      {/* 배경 장식 */}
+      <div style={{ position: 'absolute', top: '10%', right: '10%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(156, 44, 44, 0.05) 0%, transparent 70%)', borderRadius: '50%' }} />
     </div>
   );
 };
 
 // ═══════════════════════════════════════════════════════════════════
-// ADMIN APP
+// ADMIN DASHBOARD
 // ═══════════════════════════════════════════════════════════════════
+
+const AdminSummary = ({ reports, contracts }: { reports: Report[], contracts: Contract[] }) => {
+  const today = new Date().toDateString();
+  const reportsToday = reports.filter(r => r.createdAt?.toDate?.().toDateString() === today);
+  const contractsToday = contracts.filter(c => c.createdAt?.toDate?.().toDateString() === today);
+  const totalAmountToday = reportsToday.reduce((sum, r) => sum + Number(r.amount.replace(/,/g, '') || 0), 0);
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
+      <div style={{ background: '#fff', padding: 20, borderRadius: 20, border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+        <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#888', marginBottom: 8 }}>금일 신규 계약</p>
+        <p style={{ fontSize: '1.8rem', fontWeight: 900, color: '#9c2c2c' }}>{contractsToday.length}<span style={{ fontSize: '0.9rem', fontWeight: 600, marginLeft: 4 }}>건</span></p>
+      </div>
+      <div style={{ background: '#fff', padding: 20, borderRadius: 20, border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+        <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#888', marginBottom: 8 }}>금일 영수증 접수</p>
+        <p style={{ fontSize: '1.8rem', fontWeight: 900, color: '#333' }}>{reportsToday.length}<span style={{ fontSize: '0.9rem', fontWeight: 600, marginLeft: 4 }}>건</span></p>
+      </div>
+      <div style={{ background: '#fff', padding: 20, borderRadius: 20, border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+        <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#888', marginBottom: 8 }}>금일 지출 합계</p>
+        <p style={{ fontSize: '1.8rem', fontWeight: 900, color: '#007aff' }}>{totalAmountToday.toLocaleString()}<span style={{ fontSize: '0.9rem', fontWeight: 600, marginLeft: 4 }}>원</span></p>
+      </div>
+    </div>
+  );
+};
+
 const AdminApp = ({ user }: { user: User }) => {
-  const [adminTab, setAdminTab] = useState<'receipts' | 'contracts'>('receipts');
   const [reports, setReports] = useState<Report[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
+  const [adminTab, setAdminTab] = useState<'reports' | 'contracts'>('reports');
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [showContractPrint, setShowContractPrint] = useState(false);
-  const [selected, setSelected] = useState<Report | null>(null);
   const [photoFull, setPhotoFull] = useState(false);
-  const [showReport, setShowReport] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteBeforeDate, setDeleteBeforeDate] = useState('');
-  const [deleting, setDeleting] = useState(false);
-  const [linkingContract, setLinkingContract] = useState<Contract | null>(null);
-  const [selectedReceiptIds, setSelectedReceiptIds] = useState<string[]>([]);
 
-  // CSV 다운로드 (UTF-8 BOM 추가 및 완벽한 예외 처리)
-  const downloadCSV = () => {
-    if (!reports || reports.length === 0) {
-      alert("다운로드할 데이터가 없습니다.");
-      return;
-    }
-
-    const headers = ['날짜', '담당자', '현장명', '금액(원)', '항목', '사용처', '법카번호', '상태', '이미지링크'];
-    
-    try {
-      const sorted = [...reports].sort((a, b) => {
-        const siteCompare = (a.site || '').localeCompare(b.site || '', 'ko');
-        if (siteCompare !== 0) return siteCompare;
-        return (a.date || '').localeCompare(b.date || '');
-      });
-
-      const rows = sorted.map((r: Report) => [
-        r.date || '',
-        r.name || '',
-        r.site || '',
-        (r.amount || '').toString().replace(/,/g, ''),
-        r.purpose || '',
-        r.merchant || '',
-        r.cardLast4 || '',
-        r.status === 'approved' ? '승인' : r.status === 'rejected' ? '반려' : '대기',
-        r.imageUrl || ''
-      ]);
-
-      const csvString = [headers, ...rows]
-        .map(e => e.map(v => `"${(v || '').toString().replace(/"/g, '""')}"`).join(","))
-        .join("\n");
-
-      const blob = new Blob(["\ufeff" + csvString], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `영수증정산_${new Date().toISOString().slice(0, 10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      setTimeout(() => {
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }, 150);
-    } catch (e) {
-      console.error("CSV Download Error:", e);
-      alert("엑셀 생성 중 오류가 발생했습니다.");
-    }
-  };
+  // 검색 및 필터 상태
+  const [searchQuery, setSearchQuery] = useState('');
+  const [siteFilter, setSiteFilter] = useState('전체');
 
   useEffect(() => {
     const q = query(collection(db, 'reports'), orderBy('createdAt', 'desc'));
     return onSnapshot(q, snap => {
       setReports(snap.docs.map(d => ({ id: d.id, ...d.data() } as Report)));
-    }, () => {});
+    });
   }, []);
 
   useEffect(() => {
     const q = query(collection(db, 'contracts'), orderBy('createdAt', 'desc'));
     return onSnapshot(q, snap => {
       setContracts(snap.docs.map(d => ({ id: d.id, ...d.data() } as Contract)));
-    }, () => {});
+    });
   }, []);
 
-  const linkReceipts = async (contractId: string, ids: string[]) => {
-    await updateDoc(doc(db, 'contracts', contractId), { linkedReceiptIds: ids });
-    setLinkingContract(null);
-    setSelectedReceiptIds([]);
-  };
+  // 모든 현장 목록 추출
+  const allSites = ['전체', ...Array.from(new Set([
+    ...reports.map(r => r.site),
+    ...contracts.map(c => c.siteName)
+  ].filter(Boolean) as string[]))];
+
+  // 필터링된 데이터
+  const filteredReports = reports.filter(r => {
+    const matchesSearch = (r.name + r.merchant + r.site + r.purpose).toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSite = siteFilter === '전체' || r.site === siteFilter;
+    return matchesSearch && matchesSite;
+  });
+
+  const filteredContracts = contracts.filter(c => {
+    const matchesSearch = (c.workerName + c.siteName + c.workType + c.managerName).toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSite = siteFilter === '전체' || c.siteName === siteFilter;
+    return matchesSearch && matchesSite;
+  });
 
   const updateStatus = async (id: string, status: 'approved' | 'rejected') => {
     await updateDoc(doc(db, 'reports', id), { status });
-    setSelected(null);
+    setSelectedReport(null);
   };
 
   // 개별 삭제
@@ -641,7 +698,7 @@ const AdminApp = ({ user }: { user: User }) => {
     if (!window.confirm('이 영수증을 삭제하시겠습니까?\n삭제 후에는 복구가 불가능합니다.')) return;
     try {
       await deleteDoc(doc(db, 'reports', id));
-      setSelected(null);
+      setSelectedReport(null);
     } catch { alert('삭제 실패. 다시 시도해주세요.'); }
   };
  
@@ -654,30 +711,11 @@ const AdminApp = ({ user }: { user: User }) => {
     } catch { alert('삭제 실패. 다시 시도해주세요.'); }
   };
 
-  // 기간 일괄 삭제
-  const bulkDeleteBefore = async () => {
-    if (!deleteBeforeDate) { alert('날짜를 선택해주세요.'); return; }
-    const targets = reports.filter(r => r.date && r.date < deleteBeforeDate);
-    if (targets.length === 0) { alert('해당 기간에 삭제할 데이터가 없습니다.'); return; }
-    if (!window.confirm(`${deleteBeforeDate} 이전 영수증 ${targets.length}건을 삭제합니다.\n엑셀 백업 후 진행하세요. 계속하시겠습니까?`)) return;
-    setDeleting(true);
-    try {
-      await Promise.all(targets.map(r => deleteDoc(doc(db, 'reports', r.id))));
-      setShowDeleteModal(false);
-      setDeleteBeforeDate('');
-      alert(`${targets.length}건이 삭제되었습니다.`);
-    } catch { alert('일부 삭제에 실패했습니다.'); }
-    finally { setDeleting(false); }
-  };
-
   const downloadImage = (url: string) => {
     const a = document.createElement('a');
     a.href = url; a.download = `receipt_${Date.now()}.jpg`;
     a.target = '_blank'; a.rel = 'noopener noreferrer'; a.click();
   };
-
-  const pending = reports.filter(r => r.status === 'pending');
-  const done = reports.filter(r => r.status !== 'pending');
 
   return (
     <div style={S.page}>
@@ -689,254 +727,173 @@ const AdminApp = ({ user }: { user: User }) => {
           <img src="logo.png" alt="ADELA" style={{ height: 20, width: 'auto', objectFit: 'contain' }} />
           <span style={{ ...S.logo, fontSize: '0.85rem', color: '#888', fontWeight: 400, letterSpacing: '0.05em' }}>ADMIN</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {adminTab === 'receipts' && pending.length > 0 && (
-            <span style={{ ...S.badge, background: '#f5f5f5', color: '#333', borderRadius: 4, padding: '2px 8px', fontSize: '0.7rem', border: '1px solid #eee' }}>PENDING: {pending.length}</span>
-          )}
-          {adminTab === 'receipts' && (
-            <>
-              <button onClick={downloadCSV} style={{ ...S.subActionBtn, color: '#1a1a1a', borderColor: '#eee' }}>EXCEL</button>
-              <button onClick={() => setShowReport(true)} style={{ ...S.subActionBtn, color: '#1a1a1a', borderColor: '#eee' }}>REPORT</button>
-              <button onClick={() => setShowDeleteModal(true)} style={{ ...S.subActionBtn, color: '#9c2c2c', borderColor: '#9c2c2c40' }}>DELETE</button>
-            </>
-          )}
-          <button onClick={() => signOut(auth)}
-            style={{ background: '#fff', border: '1px solid #eee', color: '#888', padding: '6px 12px', borderRadius: 20, fontSize: '0.8rem', cursor: 'pointer' }}>
-            로그아웃
-          </button>
-        </div>
+        <button onClick={() => signOut(auth)}
+          style={{ background: '#fff', border: '1px solid #eee', color: '#888', padding: '6px 12px', borderRadius: 20, fontSize: '0.8rem', cursor: 'pointer' }}>
+          로그아웃
+        </button>
       </div>
 
-      {/* 탭 스위캘 */}
-      <div style={{ display: 'flex', borderBottom: '1px solid #f0f0f0', background: '#fff' }} className="hide-on-print">
-        {([['receipts', '🧧 영수증'], ['contracts', '📝 근로계약서']] as const).map(([key, label]) => (
-          <button key={key} onClick={() => setAdminTab(key)} style={{
-            flex: 1, padding: '12px 0', border: 'none', background: 'none',
-            fontWeight: adminTab === key ? 700 : 400,
-            color: adminTab === key ? '#9c2c2c' : '#aaa',
-            borderBottom: adminTab === key ? '2px solid #9c2c2c' : '2px solid transparent',
-            cursor: 'pointer', fontSize: '0.9rem', transition: 'all 0.2s',
-          }}>{label}</button>
-        ))}
-      </div>
+      {/* 메인 내용 */}
+      <div style={{ maxWidth: 1000, margin: '0 auto', width: '100%', padding: '0 20px 60px' }}>
+        
+        {/* 요약 정보 영역 */}
+        <AdminSummary reports={reports} contracts={contracts} />
 
-      {/* 리포트 모드 (인쇄용) - 활성화 시 메인 목록을 완전히 숨김 */}
-      {showReport && (
-        <div style={{ position: 'fixed', inset: 0, background: '#fff', zIndex: 3000, overflowY: 'auto' }} className="print-area">
-          <div style={{ ...S.header, background: '#fff', color: '#333', padding: '16px 20px', borderBottom: '1px solid #f0f0f0' }} className="hide-on-print">
-            <span style={{ fontSize: '1.1rem', fontWeight: 800 }}>인쇄용 리포트 미리보기</span>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => window.print()} style={{ ...S.submitBtn, margin: 0, padding: '10px 20px', fontSize: '0.9rem' }}>🖨️ 인쇄/PDF 저장</button>
-              <button onClick={() => setShowReport(false)} style={{ ...S.subActionBtn, color: '#333', borderColor: '#eee', padding: '8px 16px' }}>닫기</button>
-            </div>
-          </div>
-          <div className="print-pages">
-            {Array.from({ length: Math.ceil(reports.length / 6) }).map((_, pageIdx) => {
-              const pageGroup = reports.slice(pageIdx * 6, pageIdx * 6 + 6);
-              return (
-                <div key={pageIdx} className="print-page">
-                  <div className="print-grid">
-                    {pageGroup.map((r: Report, itemIdx: number) => {
-                      const absIdx = pageIdx * 6 + itemIdx;
-                      return (
-                        <div key={r.id} style={S.reportCard} className="report-card">
-                          <div style={S.reportHeader}>
-                            <div style={{ flex: 1 }}>
-                              <p style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>{r.merchant || r.site} ({r.amount}원)</p>
-                              <p style={{ fontSize: '0.85rem', color: '#666', marginTop: 6, margin: '6px 0 0' }}>{r.date} · {r.name} · {r.site}</p>
-                              <p style={{ fontSize: '0.85rem', color: '#007aff', marginTop: 4, fontWeight: 600, margin: '4px 0 0' }}>
-                                {r.purpose}
-                                {r.cardLast4 && <span style={{ color: '#888', marginLeft: 8 }}>· 법카 끝번호: {r.cardLast4}</span>}
-                              </p>
-                            </div>
-                            <div style={{ textAlign: 'right', fontSize: '0.75rem', color: '#999' }}>NO. {reports.length - absIdx}</div>
-                          </div>
-                          {r.imageUrl && (
-                            <div className="print-img-wrap">
-                              <img src={r.imageUrl} alt="" className="print-img" />
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+        {/* 탭 및 필터 바 */}
+        <div style={{ background: '#fff', borderRadius: 24, padding: '8px', display: 'flex', gap: 8, marginBottom: 20, border: '1px solid #eee', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+          <button onClick={() => setAdminTab('reports')} style={{
+            flex: 1, padding: '14px', borderRadius: 18, border: 'none', fontWeight: 800, cursor: 'pointer',
+            background: adminTab === 'reports' ? '#1a1a1a' : 'transparent',
+            color: adminTab === 'reports' ? '#fff' : '#888',
+          }}>영수증 내역 ({reports.length})</button>
+          <button onClick={() => setAdminTab('contracts')} style={{
+            flex: 1, padding: '14px', borderRadius: 18, border: 'none', fontWeight: 800, cursor: 'pointer',
+            background: adminTab === 'contracts' ? '#1a1a1a' : 'transparent',
+            color: adminTab === 'contracts' ? '#fff' : '#888',
+          }}>근로계약서 ({contracts.length})</button>
         </div>
-      )}
 
-      {/* 기간 일괄 삭제 모달 */}
-      {showDeleteModal && (
-        <div style={S.modal} onClick={() => setShowDeleteModal(false)}>
-          <div style={S.modalBox} onClick={e => e.stopPropagation()}>
-            <p style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: 8 }}>📅 기간 일괄 삭제</p>
-            <p style={{ fontSize: '0.85rem', color: '#ff3b30', marginBottom: 20, lineHeight: 1.6 }}>
-              ⚠️ 삭제된 데이터는 복구가 불가능합니다.<br />반드시 엑셀(EXCEL) 백업 후 진행하세요.
-            </p>
-            <div style={{ marginBottom: 20 }}>
-              <label style={S.label}>이 날짜 이전 영수증을 모두 삭제</label>
-              <input type="date" value={deleteBeforeDate} onChange={e => setDeleteBeforeDate(e.target.value)}
-                style={S.input} />
-              {deleteBeforeDate && (
-                <p style={{ fontSize: '0.8rem', color: '#888', marginTop: 8 }}>
-                  해당: {reports.filter(r => r.date && r.date < deleteBeforeDate).length}건
-                </p>
-              )}
-            </div>
-            <button onClick={bulkDeleteBefore} disabled={deleting}
-              style={{ width: '100%', padding: 16, background: '#ff3b30', color: 'white', border: 'none', borderRadius: 14, fontWeight: 700, fontSize: '1rem', opacity: deleting ? 0.6 : 1 }}>
-              {deleting ? '삭제 중...' : '일괄 삭제 실행'}
-            </button>
-            <button onClick={() => setShowDeleteModal(false)}
-              style={{ width: '100%', marginTop: 10, padding: 14, background: 'transparent', color: '#888', border: '1px solid #eee', borderRadius: 14 }}>
-              취소
-            </button>
+        {/* 검색 및 현장 필터 */}
+        <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
+          <div style={{ flex: 2, minWidth: 260, position: 'relative' }}>
+            <input 
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="검색어 입력 (이름, 현장, 업체명...)"
+              style={{ ...S.input, paddingLeft: 44, height: 54 }}
+            />
+            <span style={{ position: 'absolute', left: 18, top: '50%', transform: 'translateY(-50%)', opacity: 0.3 }}>🔍</span>
           </div>
+          <select 
+            value={siteFilter}
+            onChange={e => setSiteFilter(e.target.value)}
+            style={{ ...S.input, flex: 1, minWidth: 140, height: 54, padding: '0 16px' }}
+          >
+            {allSites.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
         </div>
-      )}
 
-      {/* 메인 내용 (리포트 모드가 아닐 때만 표시) */}
-      {!showReport && (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <p style={{ padding: '4px 20px 12px', fontSize: '0.78rem', color: '#333' }}>{user.email}</p>
-
-          {/* 영수증 탭 */}
-          {adminTab === 'receipts' && (<>
-            {pending.length === 0 && done.length === 0 && (
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333' }}>
-                <p>아직 접수된 영수증이 없습니다.</p>
-              </div>
-            )}
-            {pending.length > 0 && (<>
-              <p style={{ color: '#ff9500', fontWeight: 600, padding: '8px 20px 8px' }}>🔔 승인 대기 ({pending.length}건)</p>
-              {pending.map(r => <ReportRow key={r.id} r={r} onClick={() => setSelected(r)} />)}
-            </>)}
-            {done.length > 0 && (<>
-              <p style={{ color: '#333', fontWeight: 600, padding: '16px 20px 8px' }}>처리 완료 ({done.length}건)</p>
-              {done.map(r => <ReportRow key={r.id} r={r} onClick={() => setSelected(r)} />)}
-            </>)}
-          </>)}
-
-          {/* 근로계약서 탭 */}
-          {adminTab === 'contracts' && (<>
-            {contracts.length === 0 && (
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333' }}>
-                <div style={{ textAlign: 'center' }}>
-                  <p style={{ fontSize: '1.2rem', marginBottom: 10 }}>📝</p>
-                  <p>아직 작성된 근로계약서가 없습니다.</p>
-                </div>
-              </div>
-            )}
-            {contracts.map(c => (
-              <div key={c.id} style={{ ...S.row, padding: '12px 16px' }}>
-                <div onClick={() => setSelectedContract(c)} style={{ display: 'flex', flex: 1, gap: 12, overflow: 'hidden', alignItems: 'center' }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 10, background: '#9c2c2c10', border: '1px solid #9c2c2c20', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1.1rem' }}>
-                    📝
+        {adminTab === 'reports' ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: 12 }}>
+            {filteredReports.map(r => <ReportRow key={r.id} r={r} onClick={() => setSelectedReport(r)} />)}
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '16px' }}>
+            {filteredContracts.map(c => (
+              <div key={c.id} 
+                style={{ 
+                  background: '#fff', border: '1px solid #f0f0f0', borderRadius: 20, 
+                  padding: '20px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+                  display: 'flex', flexDirection: 'column', gap: 14, cursor: 'pointer',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  position: 'relative', overflow: 'hidden'
+                }} className="contract-card"
+                onClick={() => setSelectedContract(c)}>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800 }}>{c.workerName}</h3>
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '2px 8px', borderRadius: 6, background: '#34c75915', color: '#34c759' }}>SIGNED</span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#888' }}>{c.siteName}</p>
                   </div>
-                  <div style={{ flex: 1, overflow: 'hidden' }}>
-                    <div style={{ fontWeight: 700, marginBottom: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontSize: '0.95rem' }}>{c.workerName}</span>
-                      <span style={{ fontSize: '0.7rem', color: '#9c2c2c', background: '#9c2c2c10', padding: '1px 6px', borderRadius: 6, fontWeight: 600 }}>{c.workType}</span>
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: '#555', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {c.siteName} · {c.startDate.slice(5)}~{c.endDate.slice(5)}
-                    </div>
+                  <span style={{ fontSize: '0.7rem', color: '#9c2c2c', background: '#9c2c2c10', padding: '4px 10px', borderRadius: 8, fontWeight: 700 }}>{c.workType}</span>
+                </div>
+
+                <div style={{ height: 1, background: '#f5f5f5' }} />
+
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.65rem', color: '#aaa', marginBottom: 2 }}>DAILY WAGE</label>
+                    <span style={{ fontSize: '1rem', fontWeight: 800, color: '#1a1a1a' }}>₩ {(Number(c.dailyWage?.toString().replace(/,/g, '')) || 0).toLocaleString()}</span>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <label style={{ display: 'block', fontSize: '0.65rem', color: '#aaa', marginBottom: 2 }}>PERIOD</label>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#555' }}>{(c.startDate || '').slice(5)} ~ {(c.endDate || '').slice(5)}</span>
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                  <div style={{ fontSize: '0.65rem', fontWeight: 700, padding: '3px 8px', borderRadius: 4, background: '#9c2c2c', color: 'white' }}>
-                    SIGNED
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ width: 24, height: 24, borderRadius: 12, background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>👤</div>
+                    <span style={{ fontSize: '0.75rem', color: '#666', fontWeight: 500 }}>{c.managerName || '배병선'} 소장</span>
                   </div>
                   <button 
                     onClick={(e) => { e.stopPropagation(); deleteContract(c.id); }}
-                    style={{ background: 'none', border: 'none', color: '#ff3b30', fontSize: '1.2rem', cursor: 'pointer', padding: '4px' }}>
-                    🗑️
+                    style={{ background: '#fff1f1', border: 'none', color: '#ff3b30', fontSize: '0.8rem', cursor: 'pointer', padding: '6px 10px', borderRadius: 8, fontWeight: 600 }}>
+                    DELETE
                   </button>
                 </div>
               </div>
             ))}
-          </>)}
+          </div>
+        )}
+      </div>
 
-          <div style={{ height: 40 }} />
-        </div>
-      )}
+      <div style={{ height: 40 }} />
 
 
-      {/* 사진 전체화면 */}
-      {photoFull && selected?.imageUrl && (
-        <div onClick={() => setPhotoFull(false)}
-          style={{ position: 'fixed', inset: 0, background: 'black', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <img src={selected.imageUrl} alt="" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-          <div style={{ position: 'absolute', top: 20, right: 16, display: 'flex', gap: 10 }}>
-            <button onClick={e => { e.stopPropagation(); downloadImage(selected.imageUrl); }}
-              style={{ background: '#007aff', color: 'white', border: 'none', borderRadius: 40, padding: '10px 20px', fontWeight: 600 }}>
-              💾 저장
-            </button>
-            <button onClick={() => setPhotoFull(false)}
-              style={{ background: 'rgba(255,255,255,0.15)', color: 'white', border: 'none', borderRadius: 40, padding: '10px 20px' }}>
-              닫기
-            </button>
+      {/* 영수증 상세 모달 */}
+      {selectedReport && !photoFull && (
+        <div style={S.modal} onClick={() => setSelectedReport(null)}>
+          <div style={S.modalBox} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>영수증 상세 정보</h3>
+              <button onClick={() => setSelectedReport(null)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+            </div>
+            
+            {selectedReport.imageUrl && (
+              <div style={{ marginBottom: 20 }}>
+                <img src={selectedReport.imageUrl} alt=""
+                  onClick={() => setPhotoFull(true)}
+                  style={{ width: '100%', borderRadius: 16, maxHeight: 300, objectFit: 'contain', cursor: 'pointer', background: '#f9f9f9' }} />
+              </div>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={S.modalRow}><span style={{ color: '#aaa' }}>작성자</span><strong>{selectedReport.name}</strong></div>
+              <div style={S.modalRow}><span style={{ color: '#aaa' }}>현장</span><strong>{selectedReport.site}</strong></div>
+              <div style={S.modalRow}><span style={{ color: '#aaa' }}>금액</span><strong style={{ color: '#9c2c2c', fontSize: '1.1rem' }}>{selectedReport.amount}원</strong></div>
+              <div style={S.modalRow}><span style={{ color: '#aaa' }}>항목/목적</span><strong>{selectedReport.purpose}</strong></div>
+              <div style={S.modalRow}><span style={{ color: '#aaa' }}>사용처</span><strong>{selectedReport.merchant}</strong></div>
+              <div style={S.modalRow}><span style={{ color: '#aaa' }}>상태</span>
+                <strong style={{ color: selectedReport.status === 'pending' ? '#ff9500' : selectedReport.status === 'approved' ? '#34c759' : '#ff3b30' }}>
+                  {selectedReport.status === 'pending' ? '대기' : selectedReport.status === 'approved' ? '승인' : '반려'}
+                </strong>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+              {selectedReport.status === 'pending' && (
+                <>
+                  <button onClick={() => updateStatus(selectedReport.id, 'rejected')} 
+                    style={{ flex: 1, padding: 14, borderRadius: 14, border: '1px solid #ff3b30', color: '#ff3b30', background: '#fff', fontWeight: 700 }}>반려</button>
+                  <button onClick={() => updateStatus(selectedReport.id, 'approved')}
+                    style={{ flex: 2, padding: 14, borderRadius: 14, border: 'none', color: '#fff', background: '#1a1a1a', fontWeight: 700 }}>승인</button>
+                </>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+              <button onClick={() => deleteReport(selectedReport.id)}
+                style={{ flex: 1, padding: 12, borderRadius: 12, border: '1px solid #eee', color: '#ff3b30', background: '#fff', fontSize: '0.85rem' }}>이 기록 삭제</button>
+              <button onClick={() => setSelectedReport(null)}
+                style={{ flex: 1, padding: 12, borderRadius: 12, border: '1px solid #eee', color: '#888', background: '#fff', fontSize: '0.85rem' }}>닫기</button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* 상세 모달 */}
-      {selected && !photoFull && (
-        <div style={S.modal} onClick={() => setSelected(null)}>
-          <div style={S.modalBox} onClick={e => e.stopPropagation()}>
-            {selected.imageUrl ? (
-              <div style={{ position: 'relative', marginBottom: 16 }}>
-                <img src={selected.imageUrl} alt=""
-                  onClick={() => setPhotoFull(true)}
-                  style={{ width: '100%', borderRadius: 16, maxHeight: 240, objectFit: 'cover', cursor: 'pointer' }} />
-                <div style={{ position: 'absolute', bottom: 10, right: 10, display: 'flex', gap: 8 }}>
-                  <button onClick={() => setPhotoFull(true)} style={S.photoBtn}>🔍 크게 보기</button>
-                  <button onClick={() => downloadImage(selected.imageUrl)} style={{ ...S.photoBtn, background: '#007aff' }}>💾 저장</button>
-                </div>
-              </div>
-            ) : (
-              <div style={{ height: 80, background: '#1a1a1a', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333', marginBottom: 16 }}>
-                사진 없음
-              </div>
-            )}
-
-            <div style={S.modalRow}><span style={{ color: '#aaa' }}>담당자</span><strong>{selected.name || '-'}</strong></div>
-            <div style={S.modalRow}><span style={{ color: '#aaa' }}>현장</span><strong>{selected.site}</strong></div>
-            <div style={S.modalRow}><span style={{ color: '#aaa' }}>날짜</span><strong>{selected.date || '-'}</strong></div>
-            <div style={S.modalRow}><span style={{ color: '#aaa' }}>금액</span><strong style={{ color: '#007aff', fontSize: '1.1rem' }}>{selected.amount ? `${selected.amount}원` : '-'}</strong></div>
-            <div style={S.modalRow}><span style={{ color: '#aaa' }}>항목</span><strong>{selected.purpose || '-'}</strong></div>
-            <div style={S.modalRow}><span style={{ color: '#aaa' }}>사용처</span><strong>{selected.merchant || '-'}</strong></div>
-            <div style={S.modalRow}><span style={{ color: '#aaa' }}>법카</span><strong>끝번호 {selected.cardLast4 || '-'}</strong></div>
-            <div style={S.modalRow}><span style={{ color: '#aaa' }}>접수</span><strong>{timeAgo(selected.createdAt)}</strong></div>
-            <div style={S.modalRow}>
-              <span style={{ color: '#aaa' }}>상태</span>
-              <strong style={{ color: selected.status === 'pending' ? '#ff9500' : selected.status === 'approved' ? '#34c759' : '#ff3b30' }}>
-                {selected.status === 'pending' ? '대기중' : selected.status === 'approved' ? '✓ 승인됨' : '✗ 반려됨'}
-              </strong>
-            </div>
-
-            {selected.status === 'pending' && (
-              <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-                <button onClick={() => updateStatus(selected.id, 'rejected')}
-                  style={{ flex: 1, padding: 16, background: '#ff3b3015', color: '#ff3b30', border: '1px solid #ff3b30', borderRadius: 14, fontWeight: 700, fontSize: '1rem' }}>
-                  반려
-                </button>
-                <button onClick={() => updateStatus(selected.id, 'approved')}
-                  style={{ flex: 2, padding: 16, background: '#007aff', color: 'white', border: 'none', borderRadius: 14, fontWeight: 700, fontSize: '1rem' }}>
-                  승인하기 ✓
-                </button>
-              </div>
-            )}
-            <button onClick={() => setSelected(null)}
-              style={{ width: '100%', marginTop: 12, padding: 14, background: 'transparent', color: '#444', border: '1px solid #1e1e1e', borderRadius: 14 }}>
-              닫기
-            </button>
-            <button onClick={() => deleteReport(selected.id)}
-              style={{ width: '100%', marginTop: 8, padding: 14, background: 'transparent', color: '#ff3b30', border: '1px solid #ff3b3040', borderRadius: 14, fontSize: '0.9rem' }}>
-              이 영수증 삭제
-            </button>
+      {/* 사진 전체화면 */}
+      {photoFull && selectedReport?.imageUrl && (
+        <div onClick={() => setPhotoFull(false)}
+          style={{ position: 'fixed', inset: 0, background: 'black', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <img src={selectedReport.imageUrl} alt="" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+          <div style={{ position: 'absolute', top: 20, right: 16, display: 'flex', gap: 10 }}>
+            <button onClick={e => { e.stopPropagation(); downloadImage(selectedReport.imageUrl!); }}
+              style={{ background: '#007aff', color: 'white', border: 'none', borderRadius: 40, padding: '10px 20px', fontWeight: 600 }}>저장</button>
+            <button onClick={() => setPhotoFull(false)}
+              style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', border: 'none', borderRadius: 40, padding: '10px 20px' }}>닫기</button>
           </div>
         </div>
       )}
@@ -944,82 +901,159 @@ const AdminApp = ({ user }: { user: User }) => {
       {/* 계약서 상세 모달 */}
       {selectedContract && adminTab === 'contracts' && (
         <div style={S.modal} onClick={() => setSelectedContract(null)}>
-          <div style={{ ...S.modalBox, maxHeight: '90vh' }} onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <strong style={{ fontSize: '1.1rem' }}>{selectedContract.workerName} 근로계약서</strong>
-              <span style={{ fontSize: '0.8rem', color: '#9c2c2c', fontWeight: 700 }}>{selectedContract.workType}</span>
+          <div style={{ ...S.modalBox, maxHeight: '92vh', padding: '12px 10px 30px' }} onClick={e => e.stopPropagation()}>
+            {/* 상단 타이틀 */}
+            <div style={{ textAlign: 'center', marginBottom: '8px', position: 'relative' }}>
+              <button onClick={() => setSelectedContract(null)} style={{ position: 'absolute', left: 0, top: 0, background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', zIndex: 10 }}>✕</button>
+              <h2 style={{ 
+                display: 'inline-block',
+                border: '1.5px solid #000',
+                padding: '2px 20px',
+                fontSize: '1rem',
+                letterSpacing: '5px',
+                fontWeight: 900,
+                margin: '0'
+              }}>일 용 근 로 계 약 서 (40h)</h2>
             </div>
 
-            {/* 서명 이미지 */}
-            {/* 서명 이미지 */}
-            {selectedContract.signatureUrl && (
-              <div style={{ marginBottom: 16, padding: 12, background: '#f9f9f9', borderRadius: 12, border: '1px solid #f0f0f0' }}>
-                <p style={{ fontSize: '0.73rem', color: '#9c2c2c', fontWeight: 700, marginBottom: 8 }}>근로자 서명</p>
-                <img src={selectedContract.signatureUrl} alt="서명" style={{ width: '100%', maxHeight: 100, objectFit: 'contain', background: '#fff', borderRadius: 8 }} />
-              </div>
-            )}
+            {/* 메인 테이블 (스크롤 가능하도록 감쌈) */}
+            <div style={{ width: '100%', overflowX: 'auto', marginBottom: '20px' }}>
+              <div style={{ minWidth: '320px' }}>
+                {/* 사용자/근로자 정보 테이블 */}
+                <table className="premium-table" style={{ marginBottom: '10px' }}>
+                  <tbody>
+                    <tr>
+                      <th rowSpan={2} style={{ width: '12%' }}>
+                        <div className="vertical-label" style={{ fontSize: '0.65rem' }}>
+                          <span>(</span><span>甲</span><span>)</span>
+                          <span style={{ marginTop: '2px' }}>사</span><span>용</span><span>자</span>
+                        </div>
+                      </th>
+                      <td style={{ width: '15%', textAlign: 'center', backgroundColor: '#f2f2f2', fontWeight: 'bold' }}>상 호</td>
+                      <td colSpan={3} style={{ textAlign: 'center', fontWeight: 'bold' }}>㈜ 아 델 라</td>
+                      <td style={{ width: '18%', textAlign: 'center', backgroundColor: '#f2f2f2', fontWeight: 'bold' }}>현장소장</td>
+                      <td style={{ textAlign: 'center' }}>{selectedContract.managerName || '배병선'}</td>
+                    </tr>
+                    <tr>
+                      <td style={{ textAlign: 'center', backgroundColor: '#f2f2f2', fontWeight: 'bold' }}>주 소</td>
+                      <td colSpan={5} style={{ textAlign: 'center', fontSize: '0.62rem' }}>서울 강남구 학동로 11길 56 백송B/D 2층</td>
+                    </tr>
+                    <tr>
+                      <th rowSpan={2}>
+                        <div className="vertical-label" style={{ fontSize: '0.65rem' }}>
+                          <span>(</span><span>乙</span><span>)</span>
+                          <span style={{ marginTop: '2px' }}>근</span><span>로</span><span>자</span>
+                        </div>
+                      </th>
+                      <td style={{ textAlign: 'center', backgroundColor: '#f2f2f2', fontWeight: 'bold' }}>성 명</td>
+                      <td colSpan={3} style={{ textAlign: 'center', fontWeight: 'bold' }}>{selectedContract.workerName}</td>
+                      <td style={{ textAlign: 'center', backgroundColor: '#f2f2f2', fontWeight: 'bold' }}>주민번호</td>
+                      <td style={{ textAlign: 'center' }}>{selectedContract.workerIdNum}</td>
+                    </tr>
+                    <tr>
+                      <td style={{ textAlign: 'center', backgroundColor: '#f2f2f2', fontWeight: 'bold' }}>주 소</td>
+                      <td colSpan={3} style={{ textAlign: 'center', fontSize: '0.62rem' }}>{selectedContract.workerAddress}</td>
+                      <td style={{ textAlign: 'center', backgroundColor: '#f2f2f2', fontWeight: 'bold' }}>핸드폰</td>
+                      <td style={{ textAlign: 'center' }}>{selectedContract.workerPhone}</td>
+                    </tr>
+                    <tr>
+                      <th style={{ backgroundColor: '#f2f2f2', fontWeight: 'bold' }}>계좌번호</th>
+                      <td colSpan={2} style={{ textAlign: 'center', fontWeight: 'bold' }}>{selectedContract.bankAccount}</td>
+                      <td style={{ width: '20%', textAlign: 'center', fontSize: '0.65rem' }}>은행: {selectedContract.bankName}</td>
+                      <td colSpan={3} style={{ textAlign: 'right', fontSize: '0.65rem' }}>예금주: {selectedContract.bankHolder}</td>
+                    </tr>
+                  </tbody>
+                </table>
 
-            {/* 첨부 서류 (신분증/직접 촬영 영수증) */}
-            {(selectedContract.idCardUrl || selectedContract.mealReceiptUrl) && (
-              <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-                {selectedContract.idCardUrl && (
-                  <div style={{ flex: 1, padding: 10, background: '#f9f9f9', borderRadius: 12, border: '1px solid #f0f0f0' }}>
-                    <p style={{ fontSize: '0.73rem', color: '#333', fontWeight: 700, marginBottom: 6 }}>첨부: 신분증</p>
-                    <img src={selectedContract.idCardUrl} alt="신분증" 
-                       onClick={() => setSelected({ imageUrl: selectedContract.idCardUrl } as any)}
-                       style={{ width: '100%', height: 60, objectFit: 'cover', borderRadius: 6, cursor: 'pointer' }} />
-                  </div>
-                )}
-                {selectedContract.mealReceiptUrl && (
-                  <div style={{ flex: 1, padding: 10, background: '#f9f9f9', borderRadius: 12, border: '1px solid #f0f0f0' }}>
-                    <p style={{ fontSize: '0.73rem', color: '#333', fontWeight: 700, marginBottom: 6 }}>첨부: 식대영수증</p>
-                    <img src={selectedContract.mealReceiptUrl} alt="영수증" 
-                       onClick={() => setSelected({ imageUrl: selectedContract.mealReceiptUrl } as any)}
-                       style={{ width: '100%', height: 60, objectFit: 'cover', borderRadius: 6, cursor: 'pointer' }} />
-                  </div>
-                )}
+                {/* 중간 상세 정보 테이블 */}
+                <table className="premium-table">
+                  <tbody>
+                    <tr>
+                      <th style={{ width: '15%', verticalAlign: 'middle', padding: '5px 0' }}>
+                        <div className="vertical-label" style={{ fontSize: '0.62rem' }}>
+                          <span>근</span><span>로</span><span>장</span><span>소</span>
+                        </div>
+                      </th>
+                      <td style={{ fontSize: '0.68rem' }}>각 현 장 ( 현장명 : <strong>{selectedContract.siteName}</strong> )</td>
+                    </tr>
+                    <tr>
+                      <th style={{ padding: '6px 0' }}>
+                        <div className="vertical-label" style={{ fontSize: '0.62rem' }}>
+                          <span>계</span><span>약</span><span>기</span><span>간</span>
+                        </div>
+                      </th>
+                      <td style={{ fontSize: '0.62rem', padding: '3px 6px' }}>
+                        기간: <strong>{selectedContract.startDate}</strong> ~ <strong>{selectedContract.endDate}</strong><br/>
+                        * 일용직 근로계약이며, 공정 종료 시 자동 종료됩니다.
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style={{ padding: '8px 0' }}>
+                        <div className="vertical-label" style={{ fontSize: '0.68rem' }}>
+                          <span>임</span>
+                          <span style={{ fontSize: '0.3rem', opacity: 0 }}>&nbsp;</span>
+                          <span>금</span>
+                        </div>
+                      </th>
+                      <td style={{ padding: '0' }}>
+                        <div style={{ padding: '3px 6px', borderBottom: '0.5px solid #000', fontSize: '0.64rem' }}>
+                          포괄산정임금 일당: <strong>₩ {(selectedContract.dailyWage || 0).toLocaleString()}</strong>
+                        </div>
+                        <div style={{ padding: '3px 6px', fontSize: '0.58rem' }}>
+                          기본: { (selectedContract.wageBreakdown?.base || 0).toLocaleString() } / 
+                          주휴: { (selectedContract.wageBreakdown?.weekly || 0).toLocaleString() } / 
+                          연장: { (selectedContract.wageBreakdown?.overtime || 0).toLocaleString() }
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-            )}
-
-            {[  
-              ['현장명', selectedContract.siteName],
-              ['ꫜb85c기간', `${selectedContract.startDate} ~ ${selectedContract.endDate}`],
-              ['연락처', selectedContract.workerPhone],
-              ['주민등록번호', selectedContract.workerIdNum],
-              ['주소', selectedContract.workerAddress],
-              ['계좌', `${selectedContract.bankName} ${selectedContract.bankAccount} (${selectedContract.bankHolder})`],
-              ['일당 총액', `${(selectedContract.dailyWage || 0).toLocaleString('ko-KR')}원`],
-              ['담당 소장', selectedContract.managerName],
-            ].map(([k, v]) => (
-              <div key={k as string} style={S.modalRow}><span style={{ color: '#aaa' }}>{k as string}</span><strong style={{ textAlign: 'right', maxWidth: '60%' }}>{v as string || '-'}</strong></div>
-            ))}
-
-            {/* 연결된 영수증 */}
-            <div style={{ marginTop: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                <p style={{ fontSize: '0.8rem', color: '#9c2c2c', fontWeight: 700 }}>식대 영수증 ({(selectedContract.linkedReceiptIds || []).length}건 연결됨)</p>
-                <button onClick={() => { setLinkingContract(selectedContract); setSelectedReceiptIds(selectedContract.linkedReceiptIds || []); setSelectedContract(null); }}
-                  style={{ fontSize: '0.75rem', padding: '6px 12px', borderRadius: 20, border: '1px solid #9c2c2c40', color: '#9c2c2c', background: 'none', cursor: 'pointer', fontWeight: 600 }}>
-                  + 영수증 연결
-                </button>
-              </div>
-              {(selectedContract.linkedReceiptIds || []).map(rid => {
-                const r = reports.find(x => x.id === rid);
-                return r ? (
-                  <div key={rid} style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #f5f5f5' }}>
-                    {r.imageUrl && <img src={r.imageUrl} style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover' }} />}
-                    <span style={{ fontSize: '0.85rem' }}>{r.date} · {r.merchant || r.site} · {r.amount}원</span>
-                  </div>
-                ) : null;
-              })}
             </div>
 
-            <button onClick={() => setShowContractPrint(true)}
-              style={{ width: '100%', marginTop: 20, padding: 16, background: '#1a1a1a', color: 'white', border: 'none', borderRadius: 14, fontWeight: 700 }}>
-              🖨️ 계약서 인쇄 / PDF 다운로드
-            </button>
+            {/* 첨부 서류 (신분증 & 영수증) - 모달 가독성을 위해 그리드 배치 */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '20px' }}>
+              <div>
+                <p style={{ fontSize: '0.65rem', color: '#9c2c2c', fontWeight: 800, marginBottom: '6px' }}>[신분증]</p>
+                <div style={{ border: '1px solid #eee', borderRadius: 8, height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', background: '#fcfcfc' }}>
+                  {selectedContract.idCardUrl ? (
+                    <img src={selectedContract.idCardUrl} alt="신분증" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} onClick={() => setPhotoFull(true)} />
+                  ) : <span style={{ fontSize: '0.6rem', color: '#ccc' }}>미첨부</span>}
+                </div>
+              </div>
+              <div>
+                <p style={{ fontSize: '0.65rem', color: '#9c2c2c', fontWeight: 800, marginBottom: '6px' }}>[식대 영수증]</p>
+                <div style={{ border: '1px solid #eee', borderRadius: 8, height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', background: '#fcfcfc' }}>
+                  {selectedContract.mealReceiptUrl ? (
+                    <img src={selectedContract.mealReceiptUrl} alt="영수증" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} onClick={() => setPhotoFull(true)} />
+                  ) : <span style={{ fontSize: '0.6rem', color: '#ccc' }}>미첨부</span>}
+                </div>
+              </div>
+            </div>
+
+            {/* 서명 확인 */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', border: '1.5px solid #000', borderRadius: 12, marginBottom: '20px' }}>
+              <div style={{ fontSize: '0.8rem', fontWeight: 700 }}>근로자 ( 乙 ) 서명 확인</div>
+              <div style={{ position: 'relative', width: '60px', height: '40px' }}>
+                {selectedContract.signatureUrl ? (
+                  <img src={selectedContract.signatureUrl} alt="서명" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                ) : <span style={{ color: '#ff3b30', fontSize: '0.7rem' }}>미서명</span>}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setShowContractPrint(true)}
+                style={{ flex: 2, padding: 16, background: '#1a1a1a', color: 'white', border: 'none', borderRadius: 14, fontWeight: 700, fontSize: '0.95rem' }}>
+                🖨️ 계약서 인쇄 / PDF 다운로드
+              </button>
+              <button 
+                 onClick={(e) => { e.stopPropagation(); deleteContract(selectedContract.id); }}
+                 style={{ flex: 1, padding: 16, background: '#fff', color: '#ff3b30', border: '1px solid #ff3b30', borderRadius: 14, fontWeight: 700, fontSize: '0.95rem' }}>
+                삭제
+              </button>
+            </div>
             <button onClick={() => setSelectedContract(null)}
-              style={{ width: '100%', marginTop: 10, padding: 14, background: 'transparent', color: '#444', border: '1px solid #eee', borderRadius: 14 }}>
+              style={{ width: '100%', marginTop: 10, padding: 14, background: 'transparent', color: '#888', border: '1px solid #eee', borderRadius: 14 }}>
               닫기
             </button>
           </div>
@@ -1031,41 +1065,7 @@ const AdminApp = ({ user }: { user: User }) => {
         <ContractPrintView contract={selectedContract} onClose={() => setShowContractPrint(false)} />
       )}
 
-      {/* 영수증 연결 모달 */}
-      {linkingContract && (
-        <div style={S.modal} onClick={() => setLinkingContract(null)}>
-          <div style={{ ...S.modalBox, maxHeight: '85vh' }} onClick={e => e.stopPropagation()}>
-            <p style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: 4 }}>영수증 연결</p>
-            <p style={{ fontSize: '0.8rem', color: '#aaa', marginBottom: 16 }}>{linkingContract.workerName} · {linkingContract.siteName}</p>
-            <div style={{ maxHeight: 360, overflowY: 'auto' }}>
-              {reports.filter(r => r.site === linkingContract.siteName || true).map(r => (
-                <div key={r.id} onClick={() => {
-                  setSelectedReceiptIds(prev =>
-                    prev.includes(r.id) ? prev.filter(i => i !== r.id) : [...prev, r.id]
-                  );
-                }} style={{
-                  display: 'flex', gap: 10, alignItems: 'center', padding: '10px 0',
-                  borderBottom: '1px solid #f5f5f5', cursor: 'pointer',
-                  opacity: selectedReceiptIds.includes(r.id) ? 1 : 0.6,
-                }}>
-                  <div style={{ width: 20, height: 20, borderRadius: 4, border: `2px solid ${selectedReceiptIds.includes(r.id) ? '#9c2c2c' : '#ddd'}`, background: selectedReceiptIds.includes(r.id) ? '#9c2c2c' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    {selectedReceiptIds.includes(r.id) && <span style={{ color: 'white', fontSize: '0.7rem' }}>✓</span>}
-                  </div>
-                  {r.imageUrl && <img src={r.imageUrl} style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} />}
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: '0.85rem', fontWeight: 600 }}>{r.date} · {r.amount}원</p>
-                    <p style={{ fontSize: '0.75rem', color: '#888' }}>{r.merchant || r.site} · {r.name}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <button onClick={() => linkReceipts(linkingContract.id, selectedReceiptIds)}
-              style={{ width: '100%', marginTop: 16, padding: 16, background: '#9c2c2c', color: 'white', border: 'none', borderRadius: 14, fontWeight: 700 }}>
-              {selectedReceiptIds.length}건 연결 저장
-            </button>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 };
@@ -1199,6 +1199,10 @@ style.textContent = `
   @keyframes spin { to { transform: rotate(360deg); } }
   /* --- 인쇄 미리보기 화면 모드 (A4 시뮬레이션) --- */
   .print-area { background: #f0f0f0 !important; }
+  .premium-table { width: 100%; border-collapse: collapse; border: 1px solid #000; font-family: 'Pretendard', sans-serif; }
+  .premium-table td { border: 1px solid #000; padding: 2px 4px; font-size: 0.68rem; line-height: 1.15; vertical-align: middle; }
+  .premium-table th { background-color: #f2f2f2; border: 1px solid #000; font-weight: bold; text-align: center; vertical-align: middle; letter-spacing: 1px; word-break: keep-all; }
+  .vertical-label { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; padding: 1px 0; }
   .print-pages { width: 100%; padding: 20px 0; font-family: sans-serif; }
   .print-page {
     width: 210mm;

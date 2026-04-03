@@ -25,6 +25,42 @@ function formatKRW(n: number) {
   return n.toLocaleString('ko-KR');
 }
 
+// ── 이미지 압축 유틸리티 ───────────────────────────────────────────
+const compressImage = (file: File): Promise<File> => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+        } else {
+          if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }));
+          } else {
+            resolve(file);
+          }
+        }, 'image/jpeg', 0.7);
+      };
+    };
+  });
+};
+
 // ═══════════════════════════════════════════════════════════════════
 // 서명 패드 컴포넌트
 // ═══════════════════════════════════════════════════════════════════
@@ -91,42 +127,52 @@ const SignaturePad = ({ onSave, onBack }: { onSave: (blob: Blob) => void; onBack
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#fcfcfc', fontFamily: "'Pretendard', -apple-system, sans-serif" }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px', borderBottom: '1px solid #f0f0f0', background: '#fff' }}>
-        <button onClick={onBack} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#333' }}>✕</button>
-        <span style={{ fontWeight: 700, fontSize: '1rem' }}>근로자 서명</span>
-        <button onClick={clear} style={{ background: 'none', border: '1px solid #eee', borderRadius: 20, padding: '6px 14px', fontSize: '0.8rem', cursor: 'pointer', color: '#666' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', borderBottom: '1px solid #f0f0f0', background: '#fff' }}>
+        <button onClick={onBack} style={{ background: '#f5f5f5', border: 'none', width: 36, height: 36, borderRadius: 18, fontSize: '1rem', cursor: 'pointer', color: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+        <div style={{ textAlign: 'center' }}>
+          <span style={{ fontWeight: 800, fontSize: '0.95rem', display: 'block' }}>근로자 서명</span>
+          <span style={{ fontSize: '0.65rem', color: '#999', letterSpacing: '0.05em' }}>WORKER SIGNATURE</span>
+        </div>
+        <button onClick={clear} style={{ background: 'none', border: '1px solid #eee', borderRadius: 20, padding: '6px 14px', fontSize: '0.75rem', cursor: 'pointer', color: '#888', fontWeight: 600 }}>
           지우기
         </button>
       </div>
 
-      <div style={{ padding: '20px 20px 12px', color: '#888', fontSize: '0.85rem', textAlign: 'center', lineHeight: 1.6 }}>
-        아래 서명란에 근로자가 직접 손가락으로 서명해 주세요
+      <div style={{ padding: '32px 24px 16px', color: '#555', fontSize: '0.9rem', textAlign: 'center', lineHeight: 1.6 }}>
+        <strong style={{ color: '#1a1a1a' }}>아래 흰색 영역</strong>에 직접 서명해 주세요.<br />
+        <span style={{ color: '#aaa', fontSize: '0.75rem' }}>※ 서명은 계약서 하단에 자동으로 기록됩니다.</span>
       </div>
 
-      <div style={{ margin: '0 20px', flex: 1, maxHeight: 280 }}>
+      <div style={{ margin: '0 20px', flex: 1, maxHeight: 300, position: 'relative' }}>
         <canvas
           ref={canvasRef}
           style={{
-            width: '100%', height: 260, background: '#fff',
-            border: '2px solid #1a1a1a', borderRadius: 16,
+            width: '100%', height: 280, background: '#fff',
+            border: '2px solid #1a1a1a', borderRadius: 24,
             display: 'block', touchAction: 'none',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.05)'
           }}
           onMouseDown={startDraw} onMouseMove={draw} onMouseUp={endDraw} onMouseLeave={endDraw}
           onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={endDraw}
         />
+        {isEmpty && (
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', pointerEvents: 'none', color: '#eee', fontSize: '3rem', fontWeight: 900, opacity: 0.5, letterSpacing: '0.2em' }}>SIGN HERE</div>
+        )}
       </div>
 
-      <div style={{ padding: '20px' }}>
+      <div style={{ padding: '24px' }}>
         <button
           onClick={save}
           disabled={isEmpty}
           style={{
-            width: '100%', padding: 18, background: isEmpty ? '#ddd' : '#9c2c2c',
-            color: 'white', border: 'none', borderRadius: 18, fontSize: '1.1rem',
-            fontWeight: 700, cursor: isEmpty ? 'not-allowed' : 'pointer',
+            width: '100%', padding: 20, background: isEmpty ? '#eee' : '#1a1a1a',
+            color: isEmpty ? '#aaa' : 'white', border: 'none', borderRadius: 20, fontSize: '1.1rem',
+            fontWeight: 800, cursor: isEmpty ? 'not-allowed' : 'pointer',
+            boxShadow: isEmpty ? 'none' : '0 12px 30px rgba(0,0,0,0.15)',
+            transition: 'all 0.2s'
           }}
         >
-          서명 완료 → 계약서 제출
+          {isEmpty ? '서명을 진행해 주세요' : '서명 완료 및 계약서 제출'}
         </button>
       </div>
     </div>
@@ -139,16 +185,17 @@ const SignaturePad = ({ onSave, onBack }: { onSave: (blob: Blob) => void; onBack
 export const ContractApp = () => {
   type View = 'form' | 'signature' | 'submitting' | 'done';
   const [view, setView] = useState<View>('form');
+  const [step, setStep] = useState(1); // 1: 인적사항, 2: 근로여건, 3: 서류첨부, 4: 서명 안내/미리보기
   const [showPicker, setShowPicker] = useState(false);
 
   // ── 입력 필드 ────────────────────────────────────────────────────
   const [workerName,    setWorkerName]    = useState('');
-  const [workerIdNum,   setWorkerIdNum]   = useState(''); // 주민등록번호
+  const [workerIdNum,   setWorkerIdNum]   = useState(''); 
   const [workerPhone,   setWorkerPhone]   = useState('');
   const [workerAddress, setWorkerAddress] = useState('');
-  const [bankName,      setBankName]      = useState(''); // 은행
-  const [bankAccount,   setBankAccount]   = useState(''); // 계좌번호
-  const [bankHolder,    setBankHolder]    = useState(''); // 예금주
+  const [bankName,      setBankName]      = useState(''); 
+  const [bankAccount,   setBankAccount]   = useState(''); 
+  const [bankHolder,    setBankHolder]    = useState(''); 
   const [siteName,      setSiteName]      = useState('');
   const [workType,      setWorkType]      = useState('');
   const [startDate,     setStartDate]     = useState('');
@@ -159,9 +206,9 @@ export const ContractApp = () => {
   // ── 직접 입력 및 증빙 서류 ───────────────────────────────────────
   const [customWorkType,  setCustomWorkType]  = useState('');
   const [idCardFile,      setIdCardFile]      = useState<File | null>(null);
-  const [mealReceiptFile, setMealReceiptFile] = useState<File | null>(null);
   const [idCardPreview,   setIdCardPreview]   = useState('');
-  const [mealPreview,     setMealPreview]     = useState('');
+  const [mealReceiptFile, setMealReceiptFile] = useState<File | null>(null);
+  const [mealPreview,      setMealPreview]      = useState('');
 
   const wageNum = Number(dailyWage.replace(/,/g, ''));
   const wage    = wageNum > 0 ? calcWage(wageNum) : null;
@@ -175,29 +222,30 @@ export const ContractApp = () => {
   const handleSignatureSave = async (blob: Blob) => {
     setView('submitting');
     try {
-      // 1. 이미지들 → 업로드 로직 (병렬 처리)
+      // 이미지 업로드 유틸리티 (압축 포함)
       const uploadTask = async (file: File | null, pathPrefix: string) => {
         if (!file) return '';
-        // 파일 경로에서 공백 및 특수문자 제거
+        
+        // 업로드 전 압축 적용
+        const compressedFile = await compressImage(file);
+        
         const safeName = workerName.replace(/[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]/g, '');
-        const path = `contract_signatures/attach_${pathPrefix}_${Date.now()}_${safeName}.png`;
+        const path = `contract_signatures/attach_${pathPrefix}_${Date.now()}_${safeName}.jpg`;
         const r = storageRef(storage, path);
-        await uploadBytes(r, file);
+        await uploadBytes(r, compressedFile);
         return getDownloadURL(r);
       };
 
-      // 서명 업로드 (공용 폴더 사용)
+      // 서명 업로드
       const safeName = workerName.replace(/[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]/g, '');
       const sigPath = `contract_signatures/sig_${Date.now()}_${safeName}.png`;
       const sigRef  = storageRef(storage, sigPath);
       await uploadBytes(sigRef, blob);
       const signatureUrl = await getDownloadURL(sigRef);
 
-      // 신분증 & 식대 영수증 업로드
-      const [idCardUrl, mealReceiptUrl] = await Promise.all([
-        uploadTask(idCardFile, 'id_card'),
-        uploadTask(mealReceiptFile, 'meal_receipt')
-      ]);
+      // 신분증 및 식대 영수증 업로드 (압축 자동 적용됨)
+      const idCardUrl      = await uploadTask(idCardFile, 'id_card');
+      const mealReceiptUrl = await uploadTask(mealReceiptFile, 'meal_receipt');
 
       // 2. Firestore contracts 컬렉션에 저장
       await addDoc(collection(db, 'contracts'), {
@@ -218,11 +266,12 @@ export const ContractApp = () => {
         signatureUrl,
         idCardUrl,
         mealReceiptUrl,
-        linkedReceiptIds: [],   // 나중에 관리자가 영수증 연결
         status:          'signed',
         createdAt:       serverTimestamp(),
       });
 
+      // 완료 후 로컬 스토리지 삭제
+      localStorage.removeItem('contract_draft');
       setView('done');
     } catch (err: any) {
       console.error(err);
@@ -231,13 +280,44 @@ export const ContractApp = () => {
     }
   };
 
+  // ── 로컬 스토리지 자동 저장/복구 ───────────────────────────────────────
+  useEffect(() => {
+    const saved = localStorage.getItem('contract_draft');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        setWorkerName(data.workerName || '');
+        setWorkerIdNum(data.workerIdNum || '');
+        setWorkerPhone(data.workerPhone || '');
+        setWorkerAddress(data.workerAddress || '');
+        setBankName(data.bankName || '');
+        setBankAccount(data.bankAccount || '');
+        setBankHolder(data.bankHolder || '');
+        setSiteName(data.siteName || '');
+        setWorkType(data.workType || '');
+        setCustomWorkType(data.customWorkType || '');
+        setDailyWage(data.dailyWage || '');
+        setManagerName(data.managerName || '');
+      } catch (e) {}
+    }
+  }, []);
+
+  useEffect(() => {
+    const draft = { workerName, workerIdNum, workerPhone, workerAddress, bankName, bankAccount, bankHolder, siteName, workType, customWorkType, dailyWage, managerName };
+    localStorage.setItem('contract_draft', JSON.stringify(draft));
+  }, [workerName, workerIdNum, workerPhone, workerAddress, bankName, bankAccount, bankHolder, siteName, workType, customWorkType, dailyWage, managerName]);
+
   const reset = () => {
+    localStorage.removeItem('contract_draft');
+    setStep(1);
     setWorkerName(''); setWorkerIdNum(''); setWorkerPhone(''); setWorkerAddress('');
     setBankName(''); setBankAccount(''); setBankHolder('');
     setSiteName(''); setWorkType(''); setCustomWorkType(''); setStartDate(''); setEndDate('');
     setDailyWage(''); setManagerName('');
-    setIdCardFile(null); setMealReceiptFile(null);
-    setIdCardPreview(''); setMealPreview('');
+    setIdCardFile(null);
+    setIdCardPreview('');
+    setMealReceiptFile(null);
+    setMealPreview('');
     setView('form');
   };
 
@@ -283,267 +363,270 @@ export const ContractApp = () => {
     );
   }
 
-  // ── 계약서 작성 폼 ────────────────────────────────────────────────
+  // ── 계약서 작성 폼 (Wizard 스타일) ──────────────────────────────────────
   return (
-    <div style={{ minHeight: '100vh', background: '#fcfcfc', color: '#1a1a1a', display: 'flex', flexDirection: 'column', fontFamily: "'Pretendard', -apple-system, sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: '#f8f8f8', color: '#1a1a1a', display: 'flex', flexDirection: 'column', fontFamily: "'Pretendard', -apple-system, sans-serif" }}>
 
       {/* 헤더 */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px', borderBottom: '1px solid #f0f0f0', background: '#fff', position: 'sticky', top: 0, zIndex: 10 }}>
-        <button onClick={() => window.location.href = '/'} style={{ background: 'none', border: 'none', fontSize: '1.1rem', cursor: 'pointer', color: '#555' }}>✕</button>
-        <span style={{ fontWeight: 700, fontSize: '1rem' }}>일용근로계약서</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #f0f0f0', background: '#fff', position: 'sticky', top: 0, zIndex: 10 }}>
+        <button onClick={() => {
+          if (step > 1) setStep(step - 1);
+          else window.location.href = '/';
+        }} style={{ background: '#f5f5f5', border: 'none', width: 32, height: 32, borderRadius: 16, fontSize: '0.9rem', cursor: 'pointer', color: '#555', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {step > 1 ? '←' : '✕'}
+        </button>
+        <div style={{ textAlign: 'center' }}>
+          <span style={{ fontWeight: 800, fontSize: '0.9rem', color: '#9c2c2c' }}>ADELA CONTRACT</span>
+          <div style={{ display: 'flex', gap: 4, marginTop: 4, justifyContent: 'center' }}>
+            {[1, 2, 3, 4].map(s => (
+              <div key={s} style={{ width: 20, height: 4, borderRadius: 2, background: s <= step ? '#9c2c2c' : '#eee' }} />
+            ))}
+          </div>
+        </div>
         <div style={{ width: 32 }} />
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 100 }}>
-
-        {/* 작업 유형 */}
-        <div style={CS.section}>
-          <p style={CS.sectionTitle}>작업 유형</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            {WORK_TYPES.map(t => (
-              <div key={t} onClick={() => setWorkType(t)} style={{
-                padding: '10px 16px', borderRadius: 40, fontSize: '0.9rem', cursor: 'pointer',
-                background: workType === t ? '#9c2c2c10' : '#f5f5f5',
-                border:     workType === t ? '1px solid #9c2c2c' : '1px solid #efefef',
-                color:      workType === t ? '#9c2c2c' : '#666',
-                fontWeight: workType === t ? 700 : 400,
-                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}>
-                {t}
-              </div>
-            ))}
-          </div>
-
-          {/* 직접 입력 (기타 선택 시) */}
-          {workType === '기타' && (
-            <div style={{ marginTop: 12 }}>
-              <input
-                style={CS.input}
-                placeholder="공정명을 직접 입력하세요 (예: 설비, 미장...)"
-                value={customWorkType}
-                onChange={e => setCustomWorkType(e.target.value)}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* 증빙 서류 첨부 */}
-        <div style={CS.section}>
-          <p style={CS.sectionTitle}>증빙 서류 첨부 (선택)</p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+      <div style={{ flex: 1, padding: '24px 20px' }}>
+        
+        {/* Step 1: 인적사항 */}
+        {step === 1 && (
+          <div className="fade-in">
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: 8 }}>인적사항 입력</h2>
+            <p style={{ color: '#888', fontSize: '0.85rem', marginBottom: 24 }}>근로자 본인의 정보를 정확히 입력해 주세요.</p>
             
-            {/* 신분증 구역 */}
-            <div style={{ border: '1px solid #ddd', borderRadius: 16, background: '#fff', overflow: 'hidden' }}>
-              <div style={{ height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', background: '#fafafa' }}>
-                {idCardPreview ? (
-                  <img src={idCardPreview} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : <span style={{ color: '#888', fontWeight: 600 }}>신분증</span>}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div>
+                <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#666', display: 'block', marginBottom: 6 }}>성명</label>
+                <input value={workerName} onChange={e => setWorkerName(e.target.value)} placeholder="실명을 입력하세요" style={S.input} />
               </div>
-              <div style={{ display: 'flex', borderTop: '1px solid #eee' }}>
-                {/* 촬영 버튼 (카메라 강제) */}
-                <input type="file" accept="image/*" capture="environment" id="id-cam" style={{ display: 'none' }}
-                  onChange={e => { const f = e.target.files?.[0]; if (f) { setIdCardFile(f); setIdCardPreview(URL.createObjectURL(f)); }}} />
-                <label htmlFor="id-cam" style={{ flex: 1, padding: '12px 0', textAlign: 'center', fontSize: '0.85rem', fontWeight: 700, borderRight: '1px solid #eee', cursor: 'pointer', color: '#1a1a1a' }}>촬영</label>
-                
-                {/* 앨범 버튼 (갤러리 선택) */}
-                <input type="file" accept="image/*" id="id-album" style={{ display: 'none' }}
-                  onChange={e => { const f = e.target.files?.[0]; if (f) { setIdCardFile(f); setIdCardPreview(URL.createObjectURL(f)); }}} />
-                <label htmlFor="id-album" style={{ flex: 1, padding: '12px 0', textAlign: 'center', fontSize: '0.85rem', color: '#666', cursor: 'pointer' }}>앨범</label>
+              <div>
+                <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#666', display: 'block', marginBottom: 6 }}>주민등록번호</label>
+                <input value={workerIdNum} onChange={e => setWorkerIdNum(e.target.value)} placeholder="000000-0000000" style={S.input} />
               </div>
-            </div>
-
-            {/* 식대 영수증 구역 */}
-            <div style={{ border: '1px solid #ddd', borderRadius: 16, background: '#fff', overflow: 'hidden' }}>
-              <div style={{ height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', background: '#fafafa' }}>
-                {mealPreview ? (
-                  <img src={mealPreview} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : <span style={{ color: '#888', fontWeight: 600 }}>식대영수증</span>}
+              <div>
+                <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#666', display: 'block', marginBottom: 6 }}>연락처</label>
+                <input value={workerPhone} onChange={e => setWorkerPhone(e.target.value)} placeholder="010-0000-0000" style={S.input} />
               </div>
-              <div style={{ display: 'flex', borderTop: '1px solid #eee' }}>
-                {/* 촬영 버튼 (카메라 강제) */}
-                <input type="file" accept="image/*" capture="environment" id="meal-cam" style={{ display: 'none' }}
-                  onChange={e => { const f = e.target.files?.[0]; if (f) { setMealReceiptFile(f); setMealPreview(URL.createObjectURL(f)); }}} />
-                <label htmlFor="meal-cam" style={{ flex: 1, padding: '12px 0', textAlign: 'center', fontSize: '0.85rem', fontWeight: 700, borderRight: '1px solid #eee', cursor: 'pointer', color: '#1a1a1a' }}>촬영</label>
-                
-                {/* 앨범 버튼 (갤러리 선택) */}
-                <input type="file" accept="image/*" id="meal-album" style={{ display: 'none' }}
-                  onChange={e => { const f = e.target.files?.[0]; if (f) { setMealReceiptFile(f); setMealPreview(URL.createObjectURL(f)); }}} />
-                <label htmlFor="meal-album" style={{ flex: 1, padding: '12px 0', textAlign: 'center', fontSize: '0.85rem', color: '#666', cursor: 'pointer' }}>앨범</label>
+              <div>
+                <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#666', display: 'block', marginBottom: 6 }}>주소</label>
+                <input value={workerAddress} onChange={e => setWorkerAddress(e.target.value)} placeholder="현재 거주지 주소" style={S.input} />
               </div>
             </div>
-
-          </div>
-          <p style={{ fontSize: '0.7rem', color: '#aaa', marginTop: 10, paddingLeft: 4 }}>※ 촬영 시 바로 카메라가 작동하고, 앨범은 저장된 사진을 선택합니다.</p>
-        </div>
-
-        {/* 근로자 정보 */}
-        <div style={CS.section}>
-          <p style={CS.sectionTitle}>근로자 정보</p>
-          <label style={CS.label}>성명 <span style={{ color: '#9c2c2c' }}>* (필수)</span></label>
-          <input style={CS.input} placeholder="홍길동" value={workerName} onChange={e => setWorkerName(e.target.value)} />
-
-          <label style={{ ...CS.label, marginTop: 14 }}>주민등록번호</label>
-          <input style={CS.input} placeholder="000000-0000000" value={workerIdNum}
-            onChange={e => setWorkerIdNum(e.target.value)} />
-
-          <label style={{ ...CS.label, marginTop: 14 }}>연락처 (랜드폰)</label>
-          <input style={CS.input} placeholder="010-0000-0000" type="tel"
-            value={workerPhone} onChange={e => setWorkerPhone(e.target.value)} />
-
-          <label style={{ ...CS.label, marginTop: 14 }}>주소</label>
-          <input style={CS.input} placeholder="경기도 김포시..."
-            value={workerAddress} onChange={e => setWorkerAddress(e.target.value)} />
-
-          <label style={{ ...CS.label, marginTop: 14 }}>계좌번호</label>
-          <input style={CS.input} placeholder="1002-931-178605" value={bankAccount}
-            onChange={e => setBankAccount(e.target.value)} />
-
-          <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
-            <div style={{ flex: 1 }}>
-              <label style={CS.label}>은행</label>
-              <input style={CS.input} placeholder="우리" value={bankName}
-                onChange={e => setBankName(e.target.value)} />
-            </div>
-            <div style={{ flex: 1 }}>
-              <label style={CS.label}>예금주</label>
-              <input style={CS.input} placeholder="홍길동" value={bankHolder}
-                onChange={e => setBankHolder(e.target.value)} />
-            </div>
-          </div>
-        </div>
-
-        {/* 현장 정보 */}
-        <div style={CS.section}>
-          <p style={CS.sectionTitle}>현장 정보</p>
-          <label style={CS.label}>현장명 <span style={{ color: '#9c2c2c' }}>* (필수)</span></label>
-          <input style={CS.input} placeholder="압구정 현장"
-            value={siteName} onChange={e => setSiteName(e.target.value)} />
-        </div>
-
-        {/* 근로 기간 */}
-        <div style={CS.section}>
-          <p style={CS.sectionTitle}>근로 기간</p>
-          <div style={{ display: 'flex', gap: 12 }}>
-            <div style={{ flex: 1 }}>
-              <label style={CS.label}>시작일 <span style={{ color: '#9c2c2c' }}>*</span></label>
-              <input style={CS.input} type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
-            </div>
-            <div style={{ flex: 1 }}>
-              <label style={CS.label}>종료일 <span style={{ color: '#9c2c2c' }}>*</span></label>
-              <input style={CS.input} type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
-            </div>
-          </div>
-        </div>
-
-        {/* 임금 */}
-        <div style={CS.section}>
-          <p style={CS.sectionTitle}>임금 (일당 기준)</p>
-          <label style={CS.label}>일당 총액 <span style={{ color: '#9c2c2c' }}>*</span></label>
-          <div style={{ position: 'relative' }}>
-            <input
-              style={{ ...CS.input, paddingRight: 36 }}
-              placeholder="230,000"
-              value={dailyWage}
-              inputMode="numeric"
-              onChange={e => {
-                const raw = e.target.value.replace(/[^0-9]/g, '');
-                setDailyWage(raw ? Number(raw).toLocaleString('ko-KR') : '');
-              }}
-            />
-            {dailyWage && <span style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', color: '#999', fontSize: '0.9rem' }}>원</span>}
-          </div>
-
-          {/* 자동 계산 결과표 */}
-          {wage && (
-            <div style={{ marginTop: 14, background: '#f9f9f9', borderRadius: 14, padding: '14px 16px', border: '1px solid #f0f0f0' }}>
-              <p style={{ fontSize: '0.73rem', color: '#9c2c2c', fontWeight: 700, marginBottom: 10, letterSpacing: '0.05em' }}>자동 계산 내역 (주 40시간 기준)</p>
-              {([
-                ['기본급 (1일 8시간)',   wage.base],
-                ['연장근로수당 (1일 2시간)', wage.overtime],
-                ['휴일근로수당 (1일 3시간)', wage.holiday],
-                ['유급주휴수당',         wage.weekly],
-              ] as [string, number][]).map(([label, val]) => (
-                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', padding: '5px 0', borderBottom: '1px solid #efefef' }}>
-                  <span style={{ color: '#666' }}>{label}</span>
-                  <span style={{ fontWeight: 600 }}>{formatKRW(val)}원</span>
-                </div>
-              ))}
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', padding: '8px 0 2px', fontWeight: 700 }}>
-                <span>합계</span>
-                <span style={{ color: '#9c2c2c' }}>{formatKRW(wageNum)}원</span>
+            
+            <div style={{ marginTop: 32, padding: '16px', background: '#fff9f9', borderRadius: 12, border: '1px solid #ffecec' }}>
+              <h3 style={{ fontSize: '0.85rem', fontWeight: 800, color: '#9c2c2c', marginBottom: 8 }}>🏦 급여 계좌 정보</h3>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <input value={bankName} onChange={e => setBankName(e.target.value)} placeholder="은행명" style={{ ...S.input, flex: 1 }} />
+                <input value={bankHolder} onChange={e => setBankHolder(e.target.value)} placeholder="예금주" style={{ ...S.input, flex: 1 }} />
               </div>
+              <input value={bankAccount} onChange={e => setBankAccount(e.target.value)} placeholder="계좌번호 (- 제외)" style={S.input} />
             </div>
-          )}
-        </div>
 
-        {/* 담당 소장 */}
-        <div style={CS.section}>
-          <p style={CS.sectionTitle}>작성자 (소장) <span style={{ color: '#9c2c2c' }}>(필수)</span></p>
-          <label style={CS.label}>소장 이름 <span style={{ color: '#9c2c2c' }}>*</span></label>
-          <div onClick={() => setShowPicker(true)} style={{
-            ...CS.input, display: 'flex', justifyContent: 'space-between',
-            alignItems: 'center', cursor: 'pointer',
-          }}>
-            <span style={{ color: managerName ? '#1a1a1a' : '#aaa' }}>{managerName || '담당자 선택'}</span>
-            <span style={{ fontSize: '0.8rem', color: '#555' }}>▼</span>
+            <button onClick={() => setStep(2)} disabled={!workerName || !workerPhone} style={{ ...S.submitBtn, marginTop: 40, background: (!workerName || !workerPhone) ? '#ccc' : '#9c2c2c' }}>다음 단계로</button>
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* 담당자 선택 모달 */}
-      {showPicker && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'flex-end', zIndex: 1000 }}
-          onClick={() => setShowPicker(false)}>
-          <div style={{ background: '#fff', borderRadius: '32px 32px 0 0', padding: '28px 20px 56px', width: '100%', maxHeight: '80vh', overflowY: 'auto' }}
-            onClick={e => e.stopPropagation()}>
-            <p style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: 20 }}>담당자 선택</p>
-            {Object.entries(MANAGERS).map(([team, members]) => (
-              <div key={team} style={{ marginBottom: 24 }}>
-                <p style={{ fontSize: '0.85rem', color: '#9c2c2c', fontWeight: 700, marginBottom: 12 }}>{team}</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-                  {members.map(m => (
-                    <button key={m} onClick={() => { setManagerName(m); setShowPicker(false); }} style={{
-                      padding: '12px 18px', borderRadius: 12,
-                      background: managerName === m ? '#9c2c2c' : '#fff',
-                      border:     managerName === m ? '1px solid #9c2c2c' : '1px solid #eee',
-                      color:      managerName === m ? 'white' : '#555',
-                      fontSize: '0.9rem', fontWeight: managerName === m ? 700 : 400,
-                    }}>
-                      {m}
-                    </button>
+        {/* Step 2: 근로 여건 */}
+        {step === 2 && (
+          <div className="fade-in">
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: 8 }}>근로 조건 및 현장</h2>
+            <p style={{ color: '#888', fontSize: '0.85rem', marginBottom: 24 }}>투입되는 현장과 담당 팀장을 선택해 주세요.</p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div>
+                <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#666', display: 'block', marginBottom: 6 }}>현장명</label>
+                <input value={siteName} onChange={e => setSiteName(e.target.value)} placeholder="현장 이름을 입력하세요" style={S.input} />
+              </div>
+              
+              <div>
+                <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#666', display: 'block', marginBottom: 6 }}>공정명 (선택)</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                  {WORK_TYPES.map(t => (
+                    <button key={t} onClick={() => setWorkType(t)} style={{
+                      padding: '10px 0', border: '1.5px solid', borderRadius: 12, fontSize: '0.85rem', fontWeight: 600,
+                      borderColor: workType === t ? '#9c2c2c' : '#eee',
+                      background: workType === t ? '#fff9f9' : '#fff',
+                      color: workType === t ? '#9c2c2c' : '#555'
+                    }}>{t}</button>
                   ))}
                 </div>
+                {workType === '기타' && (
+                  <input value={customWorkType} onChange={e => setCustomWorkType(e.target.value)} placeholder="공정명을 직접 입력하세요" style={{ ...S.input, marginTop: 8 }} />
+                )}
               </div>
-            ))}
-          </div>
-        </div>
-      )}
 
-      {/* 하단 제출 버튼 */}
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '16px 20px', background: '#fcfcfc', borderTop: '1px solid #f0f0f0' }}>
-        <button
-          onClick={() => setView('signature')}
-          disabled={!canProceed}
-          style={{
-            width: '100%', padding: 18, borderRadius: 18,
-            background: canProceed ? '#9c2c2c' : '#ddd',
-            color: 'white', border: 'none', fontSize: '1.1rem', fontWeight: 700,
-            cursor: canProceed ? 'pointer' : 'not-allowed',
-            boxShadow: canProceed ? '0 8px 24px rgba(156,44,44,0.2)' : 'none',
-          }}>
-          근로자 서명 받기 →
-        </button>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#666', display: 'block', marginBottom: 6 }}>시작일</label>
+                  <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={S.input} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#666', display: 'block', marginBottom: 6 }}>종료일</label>
+                  <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={S.input} />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#666', display: 'block', marginBottom: 6 }}>일당 (단가)</label>
+                <div style={{ position: 'relative' }}>
+                  <input value={dailyWage} onChange={e => setDailyWage(e.target.value.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ","))} placeholder="230,000" style={{ ...S.input, paddingRight: 40 }} />
+                  <span style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: '#aaa' }}>원</span>
+                </div>
+                {wage && (
+                  <div style={{ marginTop: 12, padding: '12px', background: '#f0f0f0', borderRadius: 12, fontSize: '0.75rem', color: '#666', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px' }}>
+                    <span>• 기본급: {formatKRW(wage.base)}원</span>
+                    <span>• 주휴수당: {formatKRW(wage.weekly)}원</span>
+                    <span>• 연장수당: {formatKRW(wage.overtime)}원</span>
+                    <span>• 휴일수당: {formatKRW(wage.holiday)}원</span>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ position: 'relative' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#666', display: 'block', marginBottom: 6 }}>담당 매니저 (팀장)</label>
+                <div onClick={() => setShowPicker(true)} style={{ ...S.input, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1.5px solid #9c2c2c', background: '#fff9f9', cursor: 'pointer' }}>
+                  {managerName || <span style={{ color: '#aaa' }}>담당자를 선택하세요</span>}
+                  <span style={{ fontSize: '0.7rem' }}>▼</span>
+                </div>
+                
+                {showPicker && (
+                  <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+                    <div style={{ background: '#fff', width: '100%', maxWidth: 360, borderRadius: 24, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+                      <div style={{ padding: '20px', background: '#9c2c2c', color: 'white', fontWeight: 800, textAlign: 'center' }}>담당 매니저 선택</div>
+                      <div style={{ maxHeight: 300, overflowY: 'auto', padding: '10px 0' }}>
+                        {Object.entries(MANAGERS).map(([dept, names]) => (
+                          <div key={dept}>
+                            <div style={{ padding: '10px 20px', background: '#f8f8f8', fontSize: '0.75rem', fontWeight: 800, color: '#999' }}>{dept}</div>
+                            {names.map(name => (
+                              <div key={name} onClick={() => { setManagerName(name); setShowPicker(false); }} style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', fontSize: '1rem', fontWeight: 600, color: '#333' }}>{name}</div>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                      <button onClick={() => setShowPicker(false)} style={{ width: '100%', padding: 20, border: 'none', background: '#f0f0f0', color: '#666', fontWeight: 700 }}>닫기</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <button onClick={() => setStep(3)} disabled={!siteName || !managerName || !startDate} style={{ ...S.submitBtn, marginTop: 40, background: (!siteName || !managerName || !startDate) ? '#ccc' : '#9c2c2c' }}>다음 단계로</button>
+          </div>
+        )}
+
+        {/* Step 3: 서류 첨부 */}
+        {step === 3 && (
+          <div className="fade-in">
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: 8 }}>증빙 서류 첨부</h2>
+            <p style={{ color: '#888', fontSize: '0.85rem', marginBottom: 24 }}>신분증과 식대 영수증을 촬영하거나 업로드해 주세요.</p>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              {/* 신분증 */}
+              <div style={{ textAlign: 'center' }}>
+                <label style={{ display: 'block', cursor: 'pointer' }}>
+                  <div style={{ width: '100%', aspectRatio: '1/1', background: '#f0f0f0', borderRadius: 20, border: idCardPreview ? '2px solid #9c2c2c' : '2px dashed #ccc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                    {idCardPreview ? (
+                      <img src={idCardPreview} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="신분증" />
+                    ) : (
+                      <>
+                        <span style={{ fontSize: '1.8rem', marginBottom: 8 }}>🪪</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#888' }}>신분증 촬영</span>
+                      </>
+                    )}
+                  </div>
+                  <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={e => {
+                    const f = e.target.files?.[0];
+                    if (f) { setIdCardFile(f); setIdCardPreview(URL.createObjectURL(f)); }
+                  }} />
+                </label>
+              </div>
+
+              {/* 영수증 */}
+              <div style={{ textAlign: 'center' }}>
+                <label style={{ display: 'block', cursor: 'pointer' }}>
+                  <div style={{ width: '100%', aspectRatio: '1/1', background: '#f0f0f0', borderRadius: 20, border: mealPreview ? '2px solid #9c2c2c' : '2px dashed #ccc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                    {mealPreview ? (
+                      <img src={mealPreview} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="영수증" />
+                    ) : (
+                      <>
+                        <span style={{ fontSize: '1.8rem', marginBottom: 8 }}>🧾</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#888' }}>식대 영수증</span>
+                      </>
+                    )}
+                  </div>
+                  <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={e => {
+                    const f = e.target.files?.[0];
+                    if (f) { setMealReceiptFile(f); setMealPreview(URL.createObjectURL(f)); }
+                  }} />
+                </label>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 24, padding: 16, background: '#fcfcfc', borderRadius: 16, border: '1px solid #eee', fontSize: '0.8rem', color: '#888', lineHeight: 1.6 }}>
+              • 촬영된 사진은 서버 업로드 시 자동 압축되어 전송됩니다. <br/>
+              • <strong style={{ color: '#333' }}>신분증 사진은 필수사항입니다.</strong>
+            </div>
+
+            <button onClick={() => setStep(4)} disabled={!idCardFile} style={{ ...S.submitBtn, marginTop: 40, background: !idCardFile ? '#ccc' : '#9c2c2c' }}>다음 단계로</button>
+          </div>
+        )}
+
+        {/* Step 4: 확인 및 서명 안내 */}
+        {step === 4 && (
+          <div className="fade-in">
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: 8 }}>마지막 단계</h2>
+            <p style={{ color: '#888', fontSize: '0.85rem', marginBottom: 24 }}>입력하신 내용을 확인하고 서명을 진행해 주세요.</p>
+            
+            <div style={{ background: '#fff', borderRadius: 20, border: '1.5px solid #000', padding: 20, boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+              <div style={{ borderBottom: '1px solid #f0f0f0', paddingBottom: 12, marginBottom: 16 }}>
+                <span style={{ fontSize: '0.7rem', color: '#999', fontWeight: 800 }}>확인된 근로자 정보</span>
+                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1a1a1a', marginTop: 4 }}>{workerName} &nbsp; ({workerPhone})</div>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: '0.85rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#888' }}>투입 현장</span>
+                  <span style={{ fontWeight: 700 }}>{siteName}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#888' }}>시작 ~ 종료</span>
+                  <span style={{ fontWeight: 700 }}>{startDate} ~ {endDate}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#888' }}>계약 단가</span>
+                  <span style={{ fontWeight: 700, color: '#9c2c2c' }}>{dailyWage}원</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#888' }}>담당 팀장</span>
+                  <span style={{ fontWeight: 700 }}>{managerName}</span>
+                </div>
+              </div>
+            </div>
+
+            <button onClick={() => setView('signature')} style={{ ...S.submitBtn, marginTop: 40 }}>서명하러 가기</button>
+          </div>
+        )}
+
       </div>
     </div>
   );
 };
 
-// ─── ContractApp 스타일 ────────────────────────────────────────────
-const CS: Record<string, React.CSSProperties> = {
-  section:      { padding: '24px 20px 0' },
-  sectionTitle: { fontSize: '0.75rem', color: '#9c2c2c', fontWeight: 700, marginBottom: 12, letterSpacing: '0.08em', textTransform: 'uppercase' as 'uppercase' },
-  label:        { display: 'block', fontSize: '0.8rem', color: '#888', marginBottom: 8, fontWeight: 600 },
-  input:        { width: '100%', padding: '16px', background: '#fff', border: '1px solid #e0e0e0', borderRadius: 16, color: '#1a1a1a', fontSize: '1rem', fontFamily: 'inherit', boxSizing: 'border-box' as 'border-box' },
+// ── 스타일 ──────────────────────────────────────────────────────────
+const S: Record<string, React.CSSProperties> = {
+  section: { padding: '28px 20px 0' },
+  sectionTitle: { fontSize: '0.8rem', color: '#1a1a1a', fontWeight: 800, marginBottom: 14, letterSpacing: '0.02em' },
+  label: { display: 'block', fontSize: '0.78rem', color: '#777', marginBottom: 8, fontWeight: 700 },
+  input: {
+    width: '100%', padding: '16px 18px', border: '1.5px solid #eee', borderRadius: 16,
+    fontSize: '0.95rem', fontWeight: 600, outline: 'none', background: '#fff',
+    transition: 'border-color 0.2s', boxSizing: 'border-box'
+  },
+  submitBtn: {
+    width: '100%', padding: 20, background: '#1a1a1a', color: 'white', border: 'none',
+    borderRadius: 20, fontSize: '1.1rem', fontWeight: 800, cursor: 'pointer',
+    boxShadow: '0 12px 30px rgba(0,0,0,0.15)'
+  }
 };
 
 export default ContractApp;
