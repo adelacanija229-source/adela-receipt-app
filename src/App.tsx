@@ -263,13 +263,13 @@ const FieldApp = () => {
       ...S.page, 
       justifyContent: 'center', 
       padding: '0 24px',
-      background: 'linear-gradient(145deg, #fcfcfc 0%, #f0f0f0 100%)',
+      background: '#fff', // 배경을 화이트로 통일하여 로고 이질감 완벽 제거
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* 장식용 배경 요소 */}
-      <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(156, 44, 44, 0.03) 0%, transparent 70%)', borderRadius: '50%' }} />
-      <div style={{ position: 'absolute', bottom: '-5%', left: '-5%', width: '200px', height: '200px', background: 'radial-gradient(circle, rgba(0, 122, 255, 0.02) 0%, transparent 70%)', borderRadius: '50%' }} />
+      {/* 장식용 배경 요소 (화이트 톤에 맞춰 투명도 조정) */}
+      <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(156, 44, 44, 0.02) 0%, transparent 70%)', borderRadius: '50%' }} />
+      <div style={{ position: 'absolute', bottom: '-5%', left: '-5%', width: '200px', height: '200px', background: 'radial-gradient(circle, rgba(0, 122, 255, 0.01) 0%, transparent 70%)', borderRadius: '50%' }} />
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 50, position: 'relative', zIndex: 1 }}>
         
@@ -310,8 +310,7 @@ const FieldApp = () => {
           display: 'flex', 
           justifyContent: 'center', 
           margin: '10px 0',
-          position: 'relative',
-          mixBlendMode: 'multiply' as 'multiply', // 부모 레벨에서 블렌딩 적용
+          position: 'relative'
         }}>
           <img src="logo.png" alt="ADELA Design Team" 
             onError={(e) => (e.currentTarget.style.display = 'none')}
@@ -319,8 +318,7 @@ const FieldApp = () => {
             style={{ 
               width: '100%', 
               height: 'auto', 
-              objectFit: 'contain',
-              display: 'block'
+              objectFit: 'contain'
             }} />
         </div>
 
