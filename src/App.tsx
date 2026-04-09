@@ -841,11 +841,22 @@ const AdminApp = ({ user: _user }: { user: User }) => {
                     <div style={{ width: 24, height: 24, borderRadius: 12, background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>👤</div>
                     <span style={{ fontSize: '0.75rem', color: '#666', fontWeight: 500 }}>{c.managerName || '배병선'} 소장</span>
                   </div>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); deleteContract(c.id); }}
-                    style={{ background: '#fff1f1', border: 'none', color: '#ff3b30', fontSize: '0.8rem', cursor: 'pointer', padding: '6px 10px', borderRadius: 8, fontWeight: 600 }}>
-                    DELETE
-                  </button>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button 
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        setSelectedContract(c); 
+                        setShowContractPrint(true); 
+                      }}
+                      style={{ background: '#1a1a1a', border: 'none', color: '#fff', fontSize: '0.8rem', cursor: 'pointer', padding: '6px 12px', borderRadius: 8, fontWeight: 700 }}>
+                      🖨️ PRINT
+                    </button>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); deleteContract(c.id); }}
+                      style={{ background: '#fff1f1', border: 'none', color: '#ff3b30', fontSize: '0.8rem', cursor: 'pointer', padding: '6px 10px', borderRadius: 8, fontWeight: 600 }}>
+                      DELETE
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
