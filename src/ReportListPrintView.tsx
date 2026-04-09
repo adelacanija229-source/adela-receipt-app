@@ -67,20 +67,28 @@ export const ReportListPrintView = ({ reports, onClose }: { reports: any[], onCl
         <table className="compact-table">
           <thead>
             <tr>
-              <th style={{ width: '5%' }}>No.</th>
-              <th style={{ width: '12%' }}>일자</th>
+              <th style={{ width: '4%' }}>No</th>
+              <th style={{ width: '12%' }}>영수증(증빙)</th>
+              <th style={{ width: '11%' }}>일자</th>
               <th style={{ width: '12%' }}>현장명</th>
-              <th style={{ width: '10%' }}>성명</th>
-              <th style={{ width: '20%' }}>사용처</th>
-              <th style={{ width: '20%' }}>목적/내용</th>
-              <th style={{ width: '13%' }}>금액</th>
-              <th style={{ width: '8%' }}>상태</th>
+              <th style={{ width: '8%' }}>성명</th>
+              <th style={{ width: '17%' }}>사용처</th>
+              <th style={{ width: '18%' }}>목적/내용</th>
+              <th style={{ width: '12%' }}>금액</th>
+              <th style={{ width: '6%' }}>상태</th>
             </tr>
           </thead>
           <tbody>
             {reports.map((r, i) => (
               <tr key={r.id || i}>
                 <td>{i + 1}</td>
+                <td style={{ padding: '2px' }}>
+                  {r.imageUrl ? (
+                    <img src={r.imageUrl} alt="영수증" style={{ width: '100%', maxHeight: '75px', objectFit: 'contain', display: 'block', margin: '0 auto' }} />
+                  ) : (
+                    <span style={{ fontSize: '0.6rem', color: '#999' }}>미첨부</span>
+                  )}
+                </td>
                 <td>{formatDate(r.createdAt)}</td>
                 <td>{r.site}</td>
                 <td>{r.name}</td>
