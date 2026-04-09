@@ -12,6 +12,7 @@ import {
 import type { User } from 'firebase/auth';
 import { ContractApp } from './ContractApp';
 import { ContractPrintView } from './ContractPrintView';
+import { ReportListPrintView } from './ReportListPrintView';
 
 // ─── Firebase ─────────────────────────────────────────────────────
 const app = initializeApp({
@@ -671,6 +672,7 @@ const AdminApp = ({ user: _user }: { user: User }) => {
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [showContractPrint, setShowContractPrint] = useState(false);
+  const [showReportPrint, setShowReportPrint] = useState(false);
   const [photoFull, setPhotoFull] = useState(false);
 
   // 검색 및 필터 상태
@@ -776,7 +778,7 @@ const AdminApp = ({ user: _user }: { user: User }) => {
         </div>
 
         {/* 검색 및 현장 필터 */}
-        <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap', alignItems: 'center' }}>
           <div style={{ flex: 2, minWidth: 260, position: 'relative' }}>
             <input 
               value={searchQuery}
@@ -793,6 +795,12 @@ const AdminApp = ({ user: _user }: { user: User }) => {
           >
             {allSites.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
+          {adminTab === 'reports' && (
+            <button onClick={() => setShowReportPrint(true)}
+              style={{ background: '#1a1a1a', border: 'none', color: '#fff', padding: '0 20px', height: 54, borderRadius: 16, fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+              🖨️ 리스트 인쇄
+            </button>
+          )}
         </div>
 
         {adminTab === 'reports' ? (
@@ -1093,9 +1101,14 @@ const AdminApp = ({ user: _user }: { user: User }) => {
         </div>
       )}
 
-      {/* 인쇄 뷰 띄우기 */}
+      {/* 계약서 인쇄 뷰 띄우기 */}
       {showContractPrint && selectedContract && (
         <ContractPrintView contract={selectedContract} onClose={() => setShowContractPrint(false)} />
+      )}
+
+      {/* 영수증 리스트 인쇄 뷰 띄우기 */}
+      {showReportPrint && (
+        <ReportListPrintView reports={filteredReports} onClose={() => setShowReportPrint(false)} />
       )}
 
 
