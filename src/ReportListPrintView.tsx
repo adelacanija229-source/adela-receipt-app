@@ -25,22 +25,24 @@ export const ReportListPrintView = ({ reports, onClose }: { reports: any[], onCl
         @media print {
           #root { display: none !important; }
           html, body {
-            margin: 0 !important; padding: 0 !important; background: #fff !important;
+            margin: 0 !important; padding: 0 !important; background: #fff !important; width: 100%; height: auto;
           }
           .report-print-overlay {
-            position: static !important; display: block !important;
+            position: static !important; display: block !important; width: 100%;
           }
           .print-controls { display: none !important; }
           .a4-page-content {
             box-shadow: none !important;
             margin: 0 !important;
+            width: 100% !important;
+            padding: 0 !important; /* 브라우저 여백 활용 */
           }
         }
         .report-print-overlay::-webkit-scrollbar { width: 8px; }
         .report-print-overlay::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
         
-        .compact-table { width: 100%; border-collapse: collapse; font-family: 'Pretendard', sans-serif; }
-        .compact-table th, .compact-table td { border: 1px solid #333; padding: 5px 6px; font-size: 0.75rem; text-align: center; vertical-align: middle; }
+        .compact-table { width: 100%; border-collapse: collapse; font-family: 'Pretendard', sans-serif; table-layout: fixed; word-break: keep-all; }
+        .compact-table th, .compact-table td { border: 1px solid #333; padding: 5px 4px; font-size: 0.75rem; text-align: center; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: pre-wrap; }
         .compact-table th { background-color: #f2f2f2; font-weight: bold; }
         .text-left { text-align: left !important; }
         .text-right { text-align: right !important; }
@@ -68,14 +70,14 @@ export const ReportListPrintView = ({ reports, onClose }: { reports: any[], onCl
           <thead>
             <tr>
               <th style={{ width: '4%' }}>No</th>
-              <th style={{ width: '12%' }}>영수증(증빙)</th>
-              <th style={{ width: '11%' }}>일자</th>
-              <th style={{ width: '12%' }}>현장명</th>
-              <th style={{ width: '8%' }}>성명</th>
-              <th style={{ width: '17%' }}>사용처</th>
+              <th style={{ width: '13%' }}>영수증(증빙)</th>
+              <th style={{ width: '10%' }}>일자</th>
+              <th style={{ width: '11%' }}>현장명</th>
+              <th style={{ width: '7%' }}>성명</th>
+              <th style={{ width: '15%' }}>사용처</th>
+              <th style={{ width: '9%' }}>결제카드</th>
               <th style={{ width: '18%' }}>목적/내용</th>
-              <th style={{ width: '12%' }}>금액</th>
-              <th style={{ width: '6%' }}>상태</th>
+              <th style={{ width: '13%' }}>금액</th>
             </tr>
           </thead>
           <tbody>
@@ -89,15 +91,13 @@ export const ReportListPrintView = ({ reports, onClose }: { reports: any[], onCl
                     <span style={{ fontSize: '0.6rem', color: '#999' }}>미첨부</span>
                   )}
                 </td>
-                <td>{formatDate(r.createdAt)}</td>
+                <td style={{ fontSize: '0.65rem' }}>{formatDate(r.createdAt)}</td>
                 <td>{r.site}</td>
-                <td>{r.name}</td>
-                <td className="text-left">{r.merchant}</td>
-                <td className="text-left">{r.purpose}</td>
+                <td style={{ wordBreak: 'break-all' }}>{r.name}</td>
+                <td className="text-left" style={{ fontSize: '0.65rem' }}>{r.merchant}</td>
+                <td>{r.cardLast4 ? `*${r.cardLast4}` : '-'}</td>
+                <td className="text-left" style={{ fontSize: '0.65rem' }}>{r.purpose}</td>
                 <td className="text-right fw-bold">{formatKRW(r.amount)}원</td>
-                <td style={{ color: r.status === 'approved' ? '#2e7d32' : r.status === 'rejected' ? '#c62828' : '#777' }}>
-                  {r.status === 'approved' ? '승인' : r.status === 'rejected' ? '반려' : '대기'}
-                </td>
               </tr>
             ))}
           </tbody>
